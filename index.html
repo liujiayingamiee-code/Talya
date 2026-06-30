@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talya — 好友管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 1: '#E6F7FF', 2: '#BAE7FF', 4: '#69C0FF', 5: '#40A9FF', 6: '#1890FF', accent: '#007AFF' },
+            ink: { 900: '#1A1919', 700: '#434343', 600: '#666563', 400: '#999894', 300: '#BFBFBF' },
+            lime: { 1: '#E6FFEB', 6: '#11D989' },
+            purple: { 1: '#F9F0FF', 6: '#722ED1' },
+            orange: { 1: '#FFF7E6', 6: '#FA8C16' },
+            red: { 6: '#F5222D' },
+            surface: { 50: '#FAFAFA', 200: '#F0F0F0', 300: '#D9D9D9' }
+          },
+          fontFamily: { sans: ['"PingFang SC"', '"PingFangSC"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'] },
+          boxShadow: { device: '0 8px 32px rgba(0,0,0,0.08)', modal: '0 16px 48px rgba(0,0,0,0.15)' }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { background: #eef1f5; font-family: "PingFang SC", "PingFangSC", sans-serif; -webkit-font-smoothing: antialiased; }
+    .device-frame { width: 1194px; height: 834px; max-width: 100vw; max-height: 100vh; }
+    @media (max-width: 1194px) {
+      .device-frame { width: 100vw; height: auto; min-height: 100vh; border-radius: 0 !important; box-shadow: none !important; }
+      .device-shell { padding: 0 !important; }
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 99px; }
+    .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-panel { transform: scale(0.96) translateY(8px); opacity: 0; transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.25s; }
+    .modal-overlay.active .modal-panel { transform: scale(1) translateY(0); opacity: 1; }
+    .modal-card { border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    .field-figma { width: 100%; height: 48px; padding: 0 16px; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 16px; line-height: 24px; color: #1A1919; outline: none; transition: border-color 0.15s, box-shadow 0.15s; background: #fff; }
+    .field-figma::placeholder { color: #999894; }
+    .field-figma:focus { border-color: #007AFF; box-shadow: 0 0 0 2px rgba(0,122,255,0.12); }
+    .field-textarea-figma { width: 100%; min-height: 48px; padding: 12px 16px; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 16px; line-height: 24px; color: #1A1919; outline: none; resize: vertical; transition: border-color 0.15s, box-shadow 0.15s; background: #fff; }
+    .field-textarea-figma::placeholder { color: rgba(0,0,0,0.4); }
+    .field-textarea-figma:focus { border-color: #007AFF; box-shadow: 0 0 0 2px rgba(0,122,255,0.12); }
+    .btn-pill-sm { height: 30px; padding: 5px 13px; border-radius: 20px; border: 1px solid #D9D9D9; background: #fff; font-size: 14px; line-height: 22px; color: #1A1919; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s; }
+    .btn-pill-sm:hover { background: #FAFAFA; }
+    .btn-pill-sm.active { border-color: #007AFF; color: #007AFF; background: #E6F7FF; }
+    .btn-primary-full { width: 100%; height: 38px; border-radius: 20px; font-size: 14px; font-weight: 500; line-height: 22px; transition: all 0.2s; }
+    .btn-primary-full:disabled { background: #F5F5F5; border: 1px solid #D9D9D9; color: #999894; cursor: not-allowed; }
+    .btn-primary-full:not(:disabled) { background: #007AFF; border: 1px solid #007AFF; color: #fff; }
+    .btn-primary-full:not(:disabled):hover { background: #0066DD; }
+    .inline-accordion-panel { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s ease, opacity 0.3s ease; }
+    .inline-accordion-panel.open { opacity: 1; }
+    .detail-view { transition: opacity 0.25s ease; }
+    .detail-view.hidden-view { display: none; }
+    .chip-field { background: #F0F0F0; padding: 2px 8px; border-radius: 17px; font-size: 14px; line-height: 22px; color: #1A1919; cursor: pointer; transition: background 0.15s; }
+    .chip-field:hover { background: #E6F7FF; color: #007AFF; }
+    .detail-tab-link { cursor: pointer; transition: color 0.15s; }
+    .detail-tab-link:hover { color: #007AFF; }
+    .detail-tab-link.active { color: #007AFF; font-weight: 600; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s; opacity: 0; }
+    .accordion-content.open { opacity: 1; }
+    .group-members { max-height: 0; overflow: hidden; transition: max-height 0.45s ease; }
+    .group-card.expanded .group-members { max-height: 800px; }
+    .group-card.expanded .chevron-up { transform: rotate(0deg); }
+    .group-card:not(.expanded) .chevron-up { transform: rotate(180deg); }
+    .chevron-up { transition: transform 0.25s; }
+    .contact-row.selected { box-shadow: inset 0 0 0 2px #1890FF; }
+    .checkbox-custom:checked + .checkbox-box { background: #1890FF; border-color: #1890FF; }
+    .checkbox-custom:checked + .checkbox-box svg { opacity: 1; transform: scale(1); }
+    .checkbox-box svg { opacity: 0; transform: scale(0.5); transition: all 0.15s; }
+    .drop-zone.dragover { border-color: #1890FF; background: #E6F7FF; }
+    .nav-item.active { background: #E6F7FF; color: #1890FF; }
+    .nav-item.active svg { color: #1890FF; }
+    .tab-badge-active { background: #1890FF; color: #fff; border: none; }
+    .tab-badge { border: 1px solid #D9D9D9; color: #1A1919; background: transparent; }
+    .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+    .color-swatch.selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1890FF; }
+    .field-input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid #D9D9D9; border-radius: 10px; font-size: 14px; color: #1A1919; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    .field-input:focus { border-color: #1890FF; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .field-textarea { width: 100%; padding: 10px 12px; border: 1px solid #D9D9D9; border-radius: 10px; font-size: 14px; color: #1A1919; outline: none; resize: vertical; min-height: 88px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .field-textarea:focus { border-color: #1890FF; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6 device-shell">
+
+  <div class="device-frame bg-white rounded-xl shadow-device overflow-hidden flex relative">
+
+    <!-- Sidebar 252px — navigation component -->
+    <aside class="w-[252px] bg-surface-50 border-r border-black/[0.06] flex flex-col shrink-0 pt-[32px] gap-[24px]">
+      <div class="h-[55px] px-[16px] flex items-start">
+        <div class="flex items-center gap-[12px] py-[4px]">
+          <div class="w-8 h-8 rounded-[10px] bg-brand-6 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <span class="text-lg font-semibold text-ink-900 leading-[26px]">Talya</span>
+        </div>
+      </div>
+      <div class="px-[16px]">
+        <div class="h-[40px] bg-surface-200 rounded-[10px] px-[16px] py-[8px] flex items-center gap-[8px]">
+          <svg class="w-5 h-5 text-ink-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <span class="text-base text-ink-400 leading-6">搜索你的所有内容</span>
+        </div>
+      </div>
+      <nav class="px-[16px] flex flex-col gap-[12px]">
+        <a class="nav-item flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] text-ink-700 hover:bg-white transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="text-base font-semibold flex-1 leading-6">学习空间</span>
+        </a>
+        <a class="nav-item flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] text-ink-700 hover:bg-white transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="text-base font-semibold flex-1 leading-6">我的书架</span><span class="text-base font-semibold text-ink-600 leading-6">3</span>
+        </a>
+        <a class="nav-item flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] text-ink-700 hover:bg-white transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          <span class="text-base font-semibold flex-1 leading-6">所有共享</span><span class="text-base font-semibold text-ink-600 leading-6">5</span>
+        </a>
+        <a class="nav-item active flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="text-base font-semibold flex-1 leading-6">好友管理</span>
+        </a>
+        <a class="nav-item flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] text-ink-700 hover:bg-white transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span class="text-base font-semibold flex-1 leading-6">教辅资料</span>
+        </a>
+      </nav>
+      <div class="flex-1 px-[16px] flex flex-col gap-[12px] min-h-0">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-ink-600 leading-[22px]">标签</span>
+          <button class="w-[22px] h-[22px] rounded-full flex items-center justify-center hover:bg-surface-200 transition-colors">
+            <svg class="w-4 h-4 text-ink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <a class="flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] hover:bg-white transition-colors cursor-pointer">
+          <span class="w-5 h-5 rounded-full bg-brand-6 shrink-0"></span>
+          <span class="text-base font-semibold text-ink-700 flex-1 leading-6">数学课程</span><span class="text-base font-semibold text-ink-600 leading-6">2</span>
+        </a>
+        <a class="flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] hover:bg-white transition-colors cursor-pointer">
+          <span class="w-5 h-5 rounded-full bg-orange-6 shrink-0"></span>
+          <span class="text-base font-semibold text-ink-700 flex-1 leading-6">语文课程</span><span class="text-base font-semibold text-ink-600 leading-6">4</span>
+        </a>
+      </div>
+      <div class="border-t border-surface-300 px-[16px] pt-[20px] pb-[32px] flex flex-col gap-[24px]">
+        <a class="flex items-center gap-[8px] px-[8px] py-[4px] rounded-[10px] hover:bg-white transition-colors cursor-pointer relative">
+          <svg class="w-5 h-5 text-ink-700" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="text-base font-semibold text-ink-700 leading-6">通知中心</span>
+          <span class="absolute left-6 top-0 w-1.5 h-1.5 bg-red-6 rounded-full"></span>
+        </a>
+        <div class="flex items-center gap-[8px]">
+          <div class="w-10 h-10 rounded-full bg-brand-4 text-white font-semibold flex items-center justify-center shrink-0 text-base leading-6">张</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-base font-semibold text-ink-700 leading-6">张同学</p>
+            <p class="text-xs text-ink-600">个人设置</p>
+          </div>
+          <button class="w-5 h-5 text-ink-700 hover:text-brand-6 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 flex flex-col min-w-0 py-[32px] gap-[24px] overflow-hidden">
+      <h1 class="text-[20px] font-semibold text-ink-900 px-[24px] leading-[28px] shrink-0">好友管理</h1>
+
+      <div class="flex-1 flex flex-col min-h-0 px-[24px] gap-[12px] items-end overflow-hidden">
+        <!-- Sub Tabs -->
+        <div class="flex gap-[16px] items-center shrink-0 w-full">
+          <button id="tab-contacts" onclick="switchTab('contacts')" class="flex items-center gap-[4px] text-base font-semibold text-brand-6 leading-6 transition-colors">
+            好友列表<span id="badge-contacts" class="tab-badge-active text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]">18</span>
+          </button>
+          <button id="tab-groups" onclick="switchTab('groups')" class="flex items-center gap-[4px] text-base font-semibold text-ink-400 leading-6 hover:text-ink-600 transition-colors">
+            分组管理<span id="badge-groups" class="tab-badge text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]">6</span>
+          </button>
+        </div>
+
+        <!-- VIEW: 好友管理-好友列表 (6550:65163) -->
+        <section id="view-contacts" class="flex-1 flex flex-col min-h-0 overflow-hidden w-full gap-[12px]">
+          <div class="flex items-center justify-between shrink-0 w-full">
+            <span id="contacts-count" class="text-sm text-ink-600 leading-[22px]">共 18 位好友</span>
+            <div class="flex items-center gap-[12px]">
+              <button onclick="openModal('import-csv')" class="h-[38px] px-[17px] rounded-full border border-surface-300 bg-white text-sm font-medium text-ink-900 hover:bg-surface-50 transition-all leading-[22px]">导入CSV</button>
+              <button onclick="exportCSV()" class="h-[38px] px-[17px] rounded-full border border-surface-300 bg-white text-sm font-medium text-ink-900 hover:bg-surface-50 transition-all leading-[22px]">导出CSV</button>
+              <button onclick="openModal('add-contact')" class="h-[38px] px-[17px] rounded-full bg-brand-6 border border-brand-6 text-white text-sm font-medium hover:bg-brand-5 transition-all flex items-center gap-2 leading-[22px]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加好友
+              </button>
+            </div>
+          </div>
+          <div class="h-[40px] bg-surface-200 rounded-[10px] px-[16px] py-[8px] flex items-center gap-[8px] shrink-0 w-full">
+            <svg class="w-5 h-5 text-ink-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input id="contacts-search" type="search" placeholder="搜索名称或邮箱" class="flex-1 bg-transparent border-none outline-none text-base text-ink-900 placeholder:text-ink-400 leading-6" />
+          </div>
+          <!-- Normal: 批量编辑 link | Bulk: inline toolbar (6550:65672) -->
+          <div id="bulk-edit-link-wrap" class="shrink-0">
+            <button id="btn-bulk-edit" onclick="toggleBulkEdit(true)" class="flex items-center gap-[4px] text-sm text-brand-6 hover:text-brand-5 transition-colors leading-[22px] px-[7px]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>批量编辑
+            </button>
+          </div>
+          <div id="bulk-toolbar" class="hidden shrink-0 flex items-center justify-between gap-[16px] w-full">
+            <label class="flex items-center gap-2 cursor-pointer text-sm text-ink-900 leading-[22px]">
+              <input type="checkbox" id="select-all" class="checkbox-custom sr-only" onchange="toggleSelectAll(this.checked)" />
+              <span class="checkbox-box w-5 h-5 rounded-md border-2 border-surface-300 flex items-center justify-center"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+              全选 <span id="select-count" class="text-ink-600">0/7</span>
+            </label>
+            <div class="flex items-center gap-4 flex-wrap justify-end">
+              <button onclick="toggleBulkEdit(false)" class="flex items-center gap-1 text-sm text-ink-600 hover:text-ink-900 leading-[22px] transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>取消
+              </button>
+              <button onclick="openModal('add-to-new-group')" class="flex items-center gap-1 text-sm text-ink-900 hover:text-brand-6 leading-[22px] transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6M9 14h6"/></svg>添加到新分组
+              </button>
+              <button onclick="openModal('add-to-existing-group')" class="flex items-center gap-1 text-sm text-ink-900 hover:text-brand-6 leading-[22px] transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>添加到已有分组
+              </button>
+              <button onclick="removeSelected()" class="flex items-center gap-1 text-sm text-red-6 hover:opacity-80 leading-[22px] transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>移除成员
+              </button>
+              <button onclick="showToast('副本已发送给所选联系人')" class="flex items-center gap-1 text-sm text-brand-6 hover:text-brand-5 leading-[22px] transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>发送副本
+              </button>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-[8px] w-full" id="contacts-list"></div>
+        </section>
+
+        <!-- VIEW: 好友管理-分组管理 (6550:65334) -->
+        <section id="view-groups" class="flex-1 flex flex-col min-h-0 overflow-hidden hidden w-full gap-[12px]">
+          <div class="flex items-start justify-between shrink-0 gap-4">
+            <div>
+              <p class="text-base font-semibold text-ink-600 leading-6">可重复使用的成员分组；向分组发送内容时，每位成员都会收到独立的私密副本</p>
+              <p id="groups-count" class="text-sm text-ink-600 leading-[22px] mt-0.5">共 6 个分组</p>
+            </div>
+            <button onclick="openGroupModal('create')" class="h-[38px] px-[17px] rounded-full bg-brand-6 border border-brand-6 text-white text-sm font-medium hover:bg-brand-5 transition-all flex items-center gap-2 shrink-0 leading-[22px]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新建分组
+            </button>
+          </div>
+          <div class="h-[40px] bg-surface-200 rounded-[10px] px-[16px] py-[8px] flex items-center gap-[8px] shrink-0 w-full">
+            <svg class="w-5 h-5 text-ink-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input id="groups-search" type="search" placeholder="可通过分组名称搜索分组，也可搜索成员查看其所在分组" class="flex-1 bg-transparent border-none outline-none text-base text-ink-900 placeholder:text-ink-400 leading-6" />
+          </div>
+          <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-[12px] w-full" id="groups-content"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal: 导入 CSV -->
+  <div id="modal-import-csv" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[480px] mx-4 overflow-hidden">
+      <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300">
+        <h2 class="text-lg font-semibold text-ink-900">导入 CSV</h2>
+        <button onclick="closeModal('import-csv')" class="w-9 h-9 rounded-lg hover:bg-surface-50 flex items-center justify-center text-ink-400" aria-label="关闭"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="p-[24px]">
+        <div id="drop-zone" class="drop-zone border-2 border-dashed border-surface-300 rounded-2xl p-10 text-center cursor-pointer hover:border-brand-6 hover:bg-brand-1/50 transition-all" onclick="document.getElementById('csv-file-input').click()">
+          <input type="file" id="csv-file-input" accept=".csv" class="hidden" onchange="handleFileSelect(this)" />
+          <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-brand-1 flex items-center justify-center">
+            <svg class="w-7 h-7 text-brand-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <p class="text-[15px] font-semibold text-ink-900 mb-1">拖拽 CSV 文件到此处</p>
+          <p class="text-sm text-ink-400">或点击选择文件 · 支持 .csv 格式</p>
+          <p id="file-name" class="text-sm text-brand-6 font-medium mt-3 hidden"></p>
+        </div>
+        <div class="mt-5 flex justify-end gap-2">
+          <button onclick="closeModal('import-csv')" class="h-[38px] px-5 rounded-full border border-surface-300 text-sm font-medium text-ink-600">取消</button>
+          <button onclick="simulateImport()" class="h-[38px] px-5 rounded-full bg-brand-6 text-white text-sm font-medium hover:bg-brand-5">开始导入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 添加好友 (6550:66312) -->
+  <div id="modal-add-contact" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden py-[20px]">
+      <div class="flex items-center justify-between px-[24px] shrink-0">
+        <h2 class="text-lg font-semibold text-ink-900 leading-[26px]">添加好友</h2>
+        <button onclick="closeModal('add-contact')" class="w-5 h-5 flex items-center justify-center text-ink-700 hover:opacity-70" aria-label="关闭">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto scrollbar-thin px-[24px] pt-[24px] flex flex-col gap-[24px]">
+        <p class="text-base text-ink-900 leading-6">设置用户昵称，方便后续快速识别（默认展示用户邮箱）</p>
+        <div class="flex flex-col gap-[16px]">
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">用户名称</label>
+            <input id="add-name" type="text" placeholder="输入昵称" class="field-figma" oninput="updateAddContactBtn()" />
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">邮箱</label>
+            <input id="add-email" type="email" placeholder="输入邮箱" class="field-figma" oninput="updateAddContactBtn()" />
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">备注<span class="text-ink-400">（选填）</span></label>
+            <textarea id="add-notes" rows="2" placeholder="输入你的备注" class="field-textarea-figma"></textarea>
+            <p class="text-xs text-ink-400 leading-normal">私密内容 —— 仅你自己可见，不会发送给对方</p>
+          </div>
+          <div class="flex gap-[16px]">
+            <button type="button" id="add-btn-fields" onclick="toggleInlineAccordion('add', 'fields')" class="btn-pill-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加字段
+            </button>
+            <button type="button" id="add-btn-link" onclick="toggleInlineAccordion('add', 'link')" class="btn-pill-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>关联联系人
+            </button>
+          </div>
+          <!-- 添加字段 Accordion (6550:66386) -->
+          <div id="add-acc-fields" class="inline-accordion-panel">
+            <div class="flex flex-col gap-[8px]">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-ink-600 leading-[22px]">添加字段</span>
+                <button type="button" onclick="toggleInlineAccordion('add', 'fields')" class="text-sm text-ink-900 underline leading-[22px]">取消</button>
+              </div>
+              <div id="add-field-picker" class="bg-surface-50 border border-[#E6E6E6] rounded-[12px] p-[16px] flex flex-col gap-[8px]"></div>
+            </div>
+          </div>
+          <!-- 关联联系人 Accordion (6550:66561) -->
+          <div id="add-acc-link" class="inline-accordion-panel">
+            <div class="flex flex-col gap-[8px]">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-ink-600 leading-[22px]">关联联系人</span>
+                <button type="button" onclick="toggleInlineAccordion('add', 'link')" class="text-sm text-ink-900 underline leading-[22px]">取消</button>
+              </div>
+              <div class="bg-surface-50 border border-[#E6E6E6] rounded-[12px] p-[16px] flex flex-col gap-[8px]">
+                <input id="add-link-search" type="search" placeholder="搜索好友列表以完成关联" class="field-figma" oninput="renderAddLinkGrid()" />
+                <div id="add-link-grid" class="grid grid-cols-2 gap-[8px]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button id="btn-add-contact-submit" onclick="saveNewContact()" disabled class="btn-primary-full">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 好友信息 / 分组信息 Tab 联动 (6550:65539 + 6550:66210) -->
+  <div id="modal-contact-detail" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden py-[20px]">
+      <div class="flex items-center justify-between px-[24px] shrink-0">
+        <h2 id="detail-modal-title" class="text-lg font-semibold text-ink-900 leading-[26px]">好友信息</h2>
+        <button onclick="closeModal('contact-detail')" class="w-5 h-5 flex items-center justify-center text-ink-700 hover:opacity-70" aria-label="关闭">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- 好友信息视图 -->
+      <div id="detail-view-contact" class="detail-view flex-1 overflow-y-auto scrollbar-thin px-[24px] pt-[24px] flex flex-col gap-[24px]">
+        <div class="flex flex-col gap-[16px]">
+          <div class="flex gap-[8px] items-center flex-wrap">
+            <button type="button" id="detail-tab-group" onclick="switchDetailTab('group')" class="detail-tab-link text-sm text-ink-600 leading-[22px] shrink-0">分组信息</button>
+            <div id="detail-tags" class="flex flex-wrap gap-[8px] items-center"></div>
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">用户名称</label>
+            <input id="detail-username" type="text" class="field-figma" />
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">邮箱</label>
+            <input id="detail-email" type="email" class="field-figma" />
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">备注<span class="text-ink-400">（选填）</span></label>
+            <textarea id="detail-notes" rows="2" placeholder="输入你的备注" class="field-textarea-figma"></textarea>
+            <p class="text-xs text-ink-400 leading-normal">私密内容 —— 仅你自己可见，不会发送给对方</p>
+          </div>
+          <div class="flex gap-[16px]">
+            <button type="button" id="detail-btn-fields" onclick="toggleInlineAccordion('detail', 'fields')" class="btn-pill-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加字段
+            </button>
+            <button type="button" id="detail-btn-link" onclick="toggleInlineAccordion('detail', 'link')" class="btn-pill-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>关联联系人
+            </button>
+          </div>
+          <div id="detail-acc-fields" class="inline-accordion-panel">
+            <div class="flex flex-col gap-[8px]">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-ink-600 leading-[22px]">添加字段</span>
+                <button type="button" onclick="toggleInlineAccordion('detail', 'fields')" class="text-sm text-ink-900 underline leading-[22px]">取消</button>
+              </div>
+              <div id="detail-field-picker" class="bg-surface-50 border border-[#E6E6E6] rounded-[12px] p-[16px] flex flex-col gap-[8px]"></div>
+            </div>
+          </div>
+          <div id="detail-acc-link" class="inline-accordion-panel">
+            <div class="flex flex-col gap-[8px]">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-ink-600 leading-[22px]">关联联系人</span>
+                <button type="button" onclick="toggleInlineAccordion('detail', 'link')" class="text-sm text-ink-900 underline leading-[22px]">取消</button>
+              </div>
+              <div class="bg-surface-50 border border-[#E6E6E6] rounded-[12px] p-[16px] flex flex-col gap-[8px]">
+                <input id="detail-link-search" type="search" placeholder="搜索好友列表以完成关联" class="field-figma" oninput="renderDetailLinkGrid()" />
+                <div id="detail-link-grid" class="grid grid-cols-2 gap-[8px]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-[16px] items-center">
+          <div class="flex flex-1 items-center gap-[8px] text-sm text-ink-600 leading-[22px]">
+            分享联系人信息？
+            <button type="button" onclick="openSendCopyModal('contact')" class="text-[#007AFF] flex items-center gap-[4px] font-normal leading-[22px] hover:opacity-80">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>发送副本
+            </button>
+          </div>
+          <button onclick="removeCurrentContact()" class="h-[38px] px-[17px] rounded-[20px] border border-surface-300 text-sm font-medium text-red-6 hover:bg-red-50 shrink-0">移除好友</button>
+          <button onclick="saveContactDetail()" class="h-[38px] px-[17px] rounded-[20px] bg-[#007AFF] border border-[#007AFF] text-white text-sm font-medium hover:opacity-90 shrink-0">保存</button>
+        </div>
+      </div>
+
+      <!-- 分组信息编辑视图 (6550:66210) -->
+      <div id="detail-view-group" class="detail-view hidden-view flex-1 overflow-y-auto scrollbar-thin px-[24px] pt-[24px] flex flex-col gap-[24px]">
+        <div class="flex flex-col gap-[16px]">
+          <button type="button" onclick="switchDetailTab('contact')" class="detail-tab-link text-sm text-[#007AFF] leading-[22px] text-left w-fit">← 返回好友信息</button>
+          <div id="detail-group-tabs" class="flex gap-[8px] flex-wrap"></div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">分组名称</label>
+            <input id="detail-group-name" type="text" placeholder="一年级数学学习小组" class="field-figma" />
+          </div>
+          <div>
+            <label class="block text-sm text-ink-600 mb-[8px] leading-[22px]">分组颜色</label>
+            <div id="detail-color-swatches" class="flex gap-[12px] flex-wrap"></div>
+          </div>
+          <div>
+            <label class="block text-sm text-ink-600 mb-[8px] leading-[22px]">添加用户</label>
+            <input id="detail-group-add-user" type="text" placeholder="输入名称或邮箱" class="field-figma" />
+            <p class="text-xs text-ink-400 mt-[8px] leading-normal">支持输入、逗号分隔或批量粘贴多个邮箱</p>
+            <div class="flex gap-[12px] mt-[12px]">
+              <button type="button" onclick="toggleDetailGroupContactPicker()" class="btn-pill-sm h-[38px] px-4">从好友列表添加</button>
+            </div>
+            <div id="detail-group-contact-picker" class="hidden mt-[12px] max-h-[160px] overflow-y-auto scrollbar-thin border border-[#E6E6E6] rounded-[12px] p-2 space-y-1"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-[8px]">
+              <label class="text-sm text-ink-600 leading-[22px]">成员列表</label>
+              <span id="detail-group-member-count" class="text-sm text-ink-400">0人</span>
+            </div>
+            <div id="detail-group-member-list" class="grid grid-cols-2 gap-[12px]"></div>
+          </div>
+          <div>
+            <label class="block text-sm text-ink-600 mb-[8px] leading-[22px]">留言<span class="text-ink-400">（选填）</span></label>
+            <textarea id="detail-group-message" rows="3" placeholder="输入你的留言" class="field-textarea-figma"></textarea>
+            <p class="text-xs text-ink-400 mt-[8px] leading-normal">私密内容 —— 仅你可见，仅用于记录该分组备注</p>
+          </div>
+        </div>
+        <div class="flex gap-[16px] items-center justify-between">
+          <button onclick="deleteDetailGroup()" class="h-[38px] px-[17px] rounded-[20px] border border-surface-300 text-sm font-medium text-red-6 hover:bg-red-50">删除分组</button>
+          <button onclick="saveDetailGroup()" class="h-[38px] px-[17px] rounded-[20px] bg-[#007AFF] border border-[#007AFF] text-white text-sm font-medium hover:opacity-90">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 发送副本 (6550:66356) -->
+  <div id="modal-send-copy" class="modal-overlay fixed inset-0 z-[55] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 flex flex-col overflow-hidden py-[20px]">
+      <div class="flex items-center justify-between px-[24px] shrink-0">
+        <h2 class="text-lg font-semibold text-ink-900 leading-[26px]">发送副本</h2>
+        <button onclick="closeModal('send-copy')" class="w-5 h-5 flex items-center justify-center text-ink-700 hover:opacity-70" aria-label="关闭">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-[24px] pt-[24px] flex flex-col gap-[24px]">
+        <div class="flex flex-col gap-[16px]">
+          <p class="text-base text-ink-900 leading-6">用户将获取独立副本，你后续修改内容不会同步更新对方的副本</p>
+          <div id="send-copy-summary" class="bg-surface-50 border border-surface-300 rounded-[12px] p-[16px] text-base text-ink-900 leading-6"></div>
+          <div class="flex flex-col gap-[8px]">
+            <label class="text-sm text-ink-600 leading-[22px]">发送给</label>
+            <input id="send-copy-recipient" type="text" placeholder="输入名称或邮箱" class="field-figma" oninput="updateSendCopyBtn()" />
+            <p class="text-xs text-ink-400 leading-normal">用户将收到确认通知，同意后才会添加至好友列表</p>
+          </div>
+        </div>
+        <button id="btn-send-copy-submit" onclick="confirmSendCopy()" disabled class="btn-primary-full">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 添加到新分组 -->
+  <div id="modal-add-to-new-group" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[514px] mx-4 overflow-hidden">
+      <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300">
+        <h2 class="text-lg font-semibold text-ink-900">添加到新分组</h2>
+        <button onclick="closeModal('add-to-new-group')" class="w-9 h-9 rounded-lg hover:bg-surface-50 flex items-center justify-center text-ink-400" aria-label="关闭"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="p-[24px]">
+        <label class="block text-sm font-medium text-ink-600 mb-1.5 leading-[22px]">新分组名称</label>
+        <input id="new-group-from-bulk" type="text" placeholder="输入分组名称" class="field-input" />
+        <p class="text-xs text-ink-400 mt-2">已选择 <span id="bulk-count-modal">0</span> 位联系人</p>
+        <div class="mt-5 flex justify-end gap-2">
+          <button onclick="closeModal('add-to-new-group')" class="h-[38px] px-5 rounded-full border border-surface-300 text-sm font-medium text-ink-600">取消</button>
+          <button onclick="confirmAddToNewGroup()" class="h-[38px] px-5 rounded-full bg-brand-6 text-white text-sm font-medium hover:bg-brand-5">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 添加到已有分组 -->
+  <div id="modal-add-to-existing-group" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[514px] mx-4 overflow-hidden">
+      <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300">
+        <h2 class="text-lg font-semibold text-ink-900">添加到已有分组</h2>
+        <button onclick="closeModal('add-to-existing-group')" class="w-9 h-9 rounded-lg hover:bg-surface-50 flex items-center justify-center text-ink-400" aria-label="关闭"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="p-[24px]">
+        <label class="block text-sm font-medium text-ink-600 mb-1.5 leading-[22px]">选择分组</label>
+        <select id="existing-group-select" class="field-input cursor-pointer"></select>
+        <div class="mt-5 flex justify-end gap-2">
+          <button onclick="closeModal('add-to-existing-group')" class="h-[38px] px-5 rounded-full border border-surface-300 text-sm font-medium text-ink-600">取消</button>
+          <button onclick="confirmAddToExistingGroup()" class="h-[38px] px-5 rounded-full bg-brand-6 text-white text-sm font-medium hover:bg-brand-5">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 分组信息 (6550:66210) — 新建 & 编辑共用 -->
+  <div id="modal-group" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300 shrink-0">
+        <h2 id="group-modal-title" class="text-lg font-semibold text-ink-900">分组信息</h2>
+        <button onclick="closeModal('group')" class="w-9 h-9 rounded-lg hover:bg-surface-50 flex items-center justify-center text-ink-400" aria-label="关闭"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="p-[24px] overflow-y-auto scrollbar-thin flex-1 space-y-5">
+        <div><label class="block text-sm font-medium text-ink-600 mb-1.5 leading-[22px]">分组名称</label><input id="group-name" type="text" placeholder="一年级数学学习小组" class="field-input" /></div>
+        <div>
+          <label class="block text-sm font-medium text-ink-600 mb-2 leading-[22px]">分组颜色</label>
+          <div id="color-swatches" class="flex gap-3 flex-wrap"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-600 mb-1.5 leading-[22px]">添加用户</label>
+          <input id="group-add-user" type="text" placeholder="输入名称或邮箱" class="field-input" />
+          <p class="text-xs text-ink-400 mt-1.5 leading-[18px]">支持输入、逗号分隔或批量粘贴多个邮箱</p>
+          <div class="flex gap-3 mt-3">
+            <button type="button" onclick="toggleGroupContactPicker()" class="h-[38px] px-4 rounded-full border border-surface-300 text-sm font-medium text-ink-900 hover:bg-surface-50">从好友列表添加</button>
+          </div>
+          <div id="group-contact-picker" class="hidden mt-3 max-h-[160px] overflow-y-auto scrollbar-thin border border-surface-300 rounded-[10px] p-2 space-y-1"></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-ink-600 leading-[22px]">成员列表</label>
+            <span id="group-member-count" class="text-sm text-ink-400">4人</span>
+          </div>
+          <div id="group-member-list" class="grid grid-cols-2 gap-3"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-ink-600 mb-1.5 leading-[22px]">留言 <span class="text-ink-400 font-normal">(选填)</span></label>
+          <textarea id="group-message" rows="3" placeholder="输入你的留言" class="field-textarea"></textarea>
+          <p class="text-xs text-ink-400 mt-1.5 leading-[18px]">私密内容 —— 仅你可见，仅用于记录该分组备注</p>
+        </div>
+      </div>
+      <div class="px-[24px] py-[16px] border-t border-surface-300 flex justify-between shrink-0">
+        <button id="btn-delete-group" onclick="deleteCurrentGroup()" class="h-[38px] px-5 rounded-full border border-surface-300 text-red-6 text-sm font-medium hover:bg-red-50">删除分组</button>
+        <button id="btn-save-group" onclick="saveGroupModal()" class="h-[38px] px-5 rounded-full bg-brand-6 text-white text-sm font-medium hover:bg-brand-5">创建分组</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[70] px-5 py-2.5 bg-ink-900 text-white text-sm font-medium rounded-full shadow-modal opacity-0 pointer-events-none transition-all duration-300 translate-y-4"></div>
+
+  <script>
+    // ─── Constants ───────────────────────────────────────────────
+    const STORAGE_KEY = 'talya-friends-data-v1';
+
+    const TAG_STYLES = {
+      '数学学习组': { bg: 'bg-brand-1', dot: 'bg-brand-6' },
+      '语文课外辅导': { bg: 'bg-lime-1', dot: 'bg-lime-6' },
+      '密切关注': { bg: 'bg-purple-1', dot: 'bg-purple-6' },
+      '一年级辅导': { bg: 'bg-orange-1', dot: 'bg-orange-6' }
+    };
+
+    const GROUP_COLORS = [
+      { id: 'red', bg: '#FFCCC7', class: 'bg-red-200' },
+      { id: 'orange', bg: '#FFE7BA', class: 'bg-orange-200' },
+      { id: 'yellow', bg: '#FFF1B8', class: 'bg-yellow-200' },
+      { id: 'green', bg: '#D9F7BE', class: 'bg-green-200' },
+      { id: 'blue', bg: '#BAE7FF', class: 'bg-brand-2' },
+      { id: 'pink', bg: '#FFD6E7', class: 'bg-pink-200' },
+      { id: 'gray', bg: '#F0F0F0', class: 'bg-surface-200' }
+    ];
+
+    const COLOR_CLASS_MAP = {
+      red: 'bg-red-400', orange: 'bg-orange-6', yellow: 'bg-yellow-400',
+      green: 'bg-lime-6', blue: 'bg-brand-6', pink: 'bg-purple-6', gray: 'bg-surface-300'
+    };
+
+    // ─── Initial seed data ───────────────────────────────────────
+    const INITIAL_CONTACTS = [
+      { id: 1, name: '李老师', email: 'li.laoshi@example.com', initial: '李', phone: '13800138001', linked: [], linkedContactIds: [], customFields: [], notes: '' },
+      { id: 2, name: '李华', email: 'lihua@example.com', initial: '李', phone: '', linked: [], linkedContactIds: [], customFields: [], notes: '' },
+      { id: 3, name: '杨可欣', email: 'yangkexin@example.com', initial: '杨', phone: '13900139002', linked: [], linkedContactIds: [], customFields: [], notes: '' },
+      { id: 4, name: '王小明', email: 'wangxiaoming@example.com', initial: '王', phone: '', linked: [], linkedContactIds: [], customFields: [], notes: '' },
+      { id: 5, name: '张伟', email: 'zhangwei@example.com', initial: '张', phone: '1381223333445', linked: [{ type: '父母', name: 'Willian JJJ' }], linkedContactIds: [], customFields: [], notes: '' },
+      { id: 6, name: '王芳', email: 'wangfang@example.com', initial: '王', phone: '', linked: [], linkedContactIds: [], customFields: [], notes: '' }
+    ];
+
+    const INITIAL_GROUPS = [
+      { id: 'g1', name: '数学学习组', initial: '数', colorId: 'blue', starred: true, message: '', expanded: true, memberIds: [1, 2, 3, 4] },
+      { id: 'g2', name: '语文课外辅导', initial: '语', colorId: 'green', starred: false, message: '', expanded: false, memberIds: [3, 4, 6] },
+      { id: 'g3', name: '密切关注', initial: '关', colorId: 'orange', starred: false, message: '', expanded: false, memberIds: [1, 5] },
+      { id: 'g4', name: '一年级辅导', initial: '一', colorId: 'yellow', starred: false, message: '', expanded: false, memberIds: [2, 4] }
+    ];
+
+    // ─── App state ───────────────────────────────────────────────
+    let contacts = [];
+    let groups = [];
+    let nextContactId = 1;
+    let selectedColor = 'blue';
+    let groupModalMode = 'create';
+    let groupModalMemberIds = [];
+    let bulkEditMode = false;
+    let selectedContacts = new Set();
+    let currentContactId = null;
+    let currentGroupId = null;
+
+    // Modal interaction state
+    let addFormLinkedIds = [];
+    let addFormCustomFields = [];
+    let addExpandedAccordion = null;
+    let detailExpandedAccordion = null;
+    let detailEditingGroupId = null;
+    let detailGroupMemberIds = [];
+    let detailSelectedColor = 'blue';
+    let sendCopyContext = { type: null, groupId: null, memberEmails: [] };
+
+    const FIELD_PRESETS = {
+      '信息': ['联系方式', '网址', '地址', '生日'],
+      '工作': ['公司/组织', '职责/岗位'],
+      '教育': ['学校', '班级', '年级', '学生小组/部门', '专业'],
+      '自定义': ['测试']
+    };
+
+    // ─── Persistence ─────────────────────────────────────────────
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ contacts, groups, nextContactId }));
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!Array.isArray(data.contacts) || !Array.isArray(data.groups)) return false;
+        contacts = data.contacts;
+        groups = data.groups;
+        nextContactId = data.nextContactId || Math.max(0, ...contacts.map(c => c.id)) + 1;
+        return true;
+      } catch { return false; }
+    }
+
+    function initData() {
+      if (!loadFromStorage()) {
+        contacts = JSON.parse(JSON.stringify(INITIAL_CONTACTS));
+        groups = JSON.parse(JSON.stringify(INITIAL_GROUPS));
+        nextContactId = Math.max(...contacts.map(c => c.id)) + 1;
+        saveToStorage();
+      }
+      contacts.forEach(c => {
+        if (!Array.isArray(c.linkedContactIds)) c.linkedContactIds = [];
+        if (!Array.isArray(c.customFields)) c.customFields = [];
+        if (typeof c.notes !== 'string') c.notes = '';
+      });
+    }
+
+    /** Run a mutation, persist, then refresh all views */
+    function commit(mutator) {
+      mutator();
+      saveToStorage();
+      refreshAll();
+    }
+
+    function refreshAll() {
+      renderContacts(document.getElementById('contacts-search').value);
+      renderGroups(document.getElementById('groups-search').value);
+      populateGroupSelect();
+    }
+
+    // ─── Data helpers ────────────────────────────────────────────
+    function getContact(id) { return contacts.find(c => c.id === id); }
+    function getGroup(id) { return groups.find(g => g.id === id); }
+
+    function getInitial(name) { return (name && name.charAt(0)) || '?'; }
+
+    function getGroupsForContact(contactId) {
+      return groups.filter(g => g.memberIds.includes(contactId));
+    }
+
+    function getGroupMembers(group) {
+      return group.memberIds.map(id => getContact(id)).filter(Boolean);
+    }
+
+    function getGroupColorClass(colorId) {
+      return COLOR_CLASS_MAP[colorId] || 'bg-brand-6';
+    }
+
+    function removeContactsByIds(ids) {
+      const idSet = new Set(ids);
+      contacts = contacts.filter(c => !idSet.has(c.id));
+      groups.forEach(g => { g.memberIds = g.memberIds.filter(id => !idSet.has(id)); });
+      selectedContacts.forEach(id => { if (idSet.has(id)) selectedContacts.delete(id); });
+      if (currentContactId && idSet.has(currentContactId)) currentContactId = null;
+    }
+
+    function addContactsToGroup(group, contactIds) {
+      contactIds.forEach(id => {
+        if (getContact(id) && !group.memberIds.includes(id)) group.memberIds.push(id);
+      });
+    }
+
+    // ─── Render helpers ──────────────────────────────────────────
+    function tagHtml(name) {
+      const s = TAG_STYLES[name] || { bg: 'bg-surface-200', dot: 'bg-ink-400' };
+      return `<span class="${s.bg} inline-flex items-center gap-[4px] px-[8px] py-[4px] rounded-[8px] text-sm text-ink-900 leading-[22px]"><span class="w-[14px] h-[14px] rounded-full ${s.dot} shrink-0"></span>${name}</span>`;
+    }
+
+    function detailGroupTagHtml(g) {
+      const s = TAG_STYLES[g.name] || { bg: 'bg-surface-200', dot: 'bg-ink-400' };
+      return `<button type="button" onclick="switchDetailTab('group', '${g.id}')" class="${s.bg} inline-flex items-center gap-[4px] px-[8px] py-[4px] rounded-[8px] text-sm text-ink-900 leading-[22px] hover:opacity-80 transition-opacity"><span class="w-[14px] h-[14px] rounded-full ${s.dot} shrink-0"></span>${g.name}</button>`;
+    }
+
+    function infoIcon(id) {
+      return `<button onclick="openContactDetail(event, ${id})" class="w-6 h-6 rounded-full border border-surface-300 flex items-center justify-center text-ink-400 hover:border-brand-6 hover:text-brand-6 transition-all shrink-0 ml-1" aria-label="查看详情"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>`;
+    }
+
+    function renderContacts(filter = '') {
+      const q = filter.toLowerCase();
+      const filtered = contacts.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        getGroupsForContact(c.id).some(g => g.name.toLowerCase().includes(q))
+      );
+
+      document.getElementById('contacts-count').textContent = `共 ${contacts.length} 位好友`;
+      document.getElementById('badge-contacts').textContent = contacts.length;
+      document.getElementById('select-count').textContent = `${selectedContacts.size}/${contacts.length}`;
+
+      document.getElementById('contacts-list').innerHTML = filtered.length
+        ? filtered.map(c => {
+            const tags = getGroupsForContact(c.id).map(g => g.name);
+            return `
+        <div class="contact-row bg-surface-50 rounded-[10px] px-[16px] py-[12px] flex items-center gap-[12px] cursor-pointer hover:bg-surface-200/50 transition-colors ${selectedContacts.has(c.id) ? 'selected' : ''}" onclick="handleContactClick(event, ${c.id})">
+          ${bulkEditMode ? `<label class="shrink-0 cursor-pointer" onclick="event.stopPropagation()"><input type="checkbox" class="checkbox-custom sr-only" ${selectedContacts.has(c.id) ? 'checked' : ''} onchange="toggleContactSelect(${c.id}, this.checked)" /><span class="checkbox-box w-5 h-5 rounded-md border-2 border-surface-300 flex items-center justify-center"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span></label>` : ''}
+          <div class="w-10 h-10 rounded-[20px] bg-brand-6 text-white text-base flex items-center justify-center shrink-0 leading-6">${c.initial}</div>
+          <div class="w-[200px] shrink-0 min-w-0">
+            <p class="text-base text-ink-900 leading-6 truncate">${c.name}</p>
+            <p class="text-sm text-ink-600 leading-[22px] truncate">${c.email}</p>
+          </div>
+          <div class="flex-1 flex flex-wrap gap-[8px] items-center min-w-0">${tags.map(tagHtml).join('')}</div>
+          <div class="shrink-0 flex items-center gap-[4px] justify-end ${bulkEditMode ? 'w-auto' : 'w-[208px]'}">
+            ${!bulkEditMode ? `${c.phone ? `<span class="bg-surface-200 text-ink-600 text-sm px-[8px] py-[2px] rounded-[17px] whitespace-nowrap leading-[22px] inline-flex items-center gap-[4px]"><span>手机号</span><span>${c.phone}</span></span>` : ''}${(c.linked || []).map(l => l.type ? `<span class="bg-surface-200 text-ink-600 text-sm px-[8px] py-[2px] rounded-[17px] whitespace-nowrap leading-[22px] inline-flex items-center gap-[4px]"><span>${l.type}</span><span>${l.name}</span></span>` : `<span class="bg-surface-200 text-ink-600 text-sm px-[8px] py-[2px] rounded-[17px] leading-[22px]">${l.extra || ''}</span>`).join('')}` : ''}
+            ${infoIcon(c.id)}
+          </div>
+        </div>`;
+          }).join('')
+        : `<div class="py-16 text-center text-ink-400 text-sm">未找到匹配的联系人</div>`;
+
+      const allChecked = filtered.length > 0 && filtered.every(c => selectedContacts.has(c.id));
+      document.getElementById('select-all').checked = allChecked;
+    }
+
+    function renderGroups(filter = '') {
+      const q = filter.toLowerCase();
+
+      function memberCard(m) {
+        return `<div class="bg-white border border-surface-300 rounded-[12px] h-[55px] px-[16px] py-[8px] flex items-center gap-[8px] overflow-hidden">
+          <div class="w-6 h-6 rounded-full bg-brand-6 text-white text-xs font-semibold flex items-center justify-center shrink-0">${m.initial}</div>
+          <div class="min-w-0"><p class="text-sm text-ink-900 leading-[22px] truncate">${m.name}</p><p class="text-xs text-ink-600 truncate leading-[17px]">${m.email}</p></div>
+        </div>`;
+      }
+
+      function groupBlock(g) {
+        const members = getGroupMembers(g);
+        const colorClass = getGroupColorClass(g.colorId);
+        return `<div class="group-card bg-surface-50 rounded-[10px] px-[16px] py-[12px] ${g.expanded ? 'expanded' : ''}">
+          <div class="flex items-center gap-[12px]">
+            <button onclick="toggleGroupExpand('${g.id}')" class="w-6 h-6 flex items-center justify-center text-ink-400 shrink-0" aria-label="展开/收起">
+              <svg class="w-4 h-4 chevron-up" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+            <div class="w-10 h-10 rounded-full ${colorClass} text-white text-base font-semibold flex items-center justify-center shrink-0 leading-6">${g.initial}</div>
+            <div class="flex-1 min-w-0 cursor-pointer" onclick="openGroupModal('edit', '${g.id}')">
+              <p class="text-base font-semibold text-ink-900 leading-6">${g.name}</p>
+              <p class="text-sm text-ink-600 leading-[22px]">${members.length}人</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0" onclick="event.stopPropagation()">
+              <button onclick="openSendCopyModal('group', '${g.id}')" class="flex items-center gap-1 text-sm text-[#007AFF] hover:opacity-80 leading-[22px] px-1.5 py-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>发送副本
+              </button>
+              <button onclick="toggleStar('${g.id}')" class="w-4 h-4 flex items-center justify-center ${g.starred ? 'text-orange-6' : 'text-ink-300'}">
+                <svg class="w-4 h-4" fill="${g.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="group-members"><div class="grid grid-cols-3 gap-[16px] pt-[12px]">${members.map(memberCard).join('')}</div></div>
+        </div>`;
+      }
+
+      function section(title, items) {
+        const f = items.filter(g =>
+          g.name.toLowerCase().includes(q) ||
+          getGroupMembers(g).some(m => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q))
+        );
+        if (!f.length) return '';
+        return `<p class="text-sm text-ink-900 leading-[22px]">${title} · ${f.length}</p><div class="flex flex-col gap-[8px]">${f.map(groupBlock).join('')}</div>`;
+      }
+
+      const favorited = groups.filter(g => g.starred);
+      const recent = groups.filter(g => !g.starred);
+
+      document.getElementById('badge-groups').textContent = groups.length;
+      document.getElementById('groups-count').textContent = `共 ${groups.length} 个分组`;
+
+      const html = section('收藏分组', favorited) + section('最近使用', recent);
+      document.getElementById('groups-content').innerHTML = html || `<div class="py-16 text-center text-ink-400 text-sm">未找到匹配的分组</div>`;
+    }
+
+    // ─── Tab & bulk edit ─────────────────────────────────────────
+    function switchTab(tab) {
+      const cv = document.getElementById('view-contacts'), gv = document.getElementById('view-groups');
+      const tc = document.getElementById('tab-contacts'), tg = document.getElementById('tab-groups');
+      if (tab === 'contacts') {
+        cv.classList.remove('hidden'); gv.classList.add('hidden');
+        tc.className = 'flex items-center gap-[4px] text-base font-semibold text-brand-6 leading-6 transition-colors';
+        tg.className = 'flex items-center gap-[4px] text-base font-semibold text-ink-400 leading-6 hover:text-ink-600 transition-colors';
+        document.getElementById('badge-contacts').className = 'tab-badge-active text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]';
+        document.getElementById('badge-groups').className = 'tab-badge text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]';
+      } else {
+        cv.classList.add('hidden'); gv.classList.remove('hidden');
+        tg.className = 'flex items-center gap-[4px] text-base font-semibold text-brand-6 leading-6 transition-colors';
+        tc.className = 'flex items-center gap-[4px] text-base font-semibold text-ink-400 leading-6 hover:text-ink-600 transition-colors';
+        document.getElementById('badge-groups').className = 'tab-badge-active text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]';
+        document.getElementById('badge-contacts').className = 'tab-badge text-sm font-semibold px-[4px] rounded-[4px] min-w-[22px] text-center leading-[22px]';
+      }
+    }
+
+    function toggleBulkEdit(on) {
+      bulkEditMode = typeof on === 'boolean' ? on : !bulkEditMode;
+      if (!bulkEditMode) selectedContacts.clear();
+      document.getElementById('bulk-toolbar').classList.toggle('hidden', !bulkEditMode);
+      document.getElementById('bulk-edit-link-wrap').classList.toggle('hidden', bulkEditMode);
+      renderContacts(document.getElementById('contacts-search').value);
+    }
+
+    function toggleContactSelect(id, checked) {
+      checked ? selectedContacts.add(id) : selectedContacts.delete(id);
+      renderContacts(document.getElementById('contacts-search').value);
+    }
+
+    function toggleSelectAll(checked) {
+      const q = document.getElementById('contacts-search').value.toLowerCase();
+      const filtered = contacts.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
+      if (checked) filtered.forEach(c => selectedContacts.add(c.id));
+      else selectedContacts.clear();
+      renderContacts(document.getElementById('contacts-search').value);
+    }
+
+    function handleContactClick(e, id) {
+      if (bulkEditMode) {
+        selectedContacts.has(id) ? selectedContacts.delete(id) : selectedContacts.add(id);
+        renderContacts(document.getElementById('contacts-search').value);
+      } else {
+        openContactDetail(null, id);
+      }
+    }
+
+    function removeSelected() {
+      if (!selectedContacts.size) { showToast('请先选择联系人'); return; }
+      commit(() => {
+        removeContactsByIds([...selectedContacts]);
+        selectedContacts.clear();
+        bulkEditMode = false;
+        document.getElementById('bulk-toolbar').classList.add('hidden');
+        document.getElementById('bulk-edit-link-wrap').classList.remove('hidden');
+      });
+      showToast('已移除所选成员');
+    }
+
+    // ─── Contact CRUD ────────────────────────────────────────────
+    function resetAddContactForm() {
+      document.getElementById('add-name').value = '';
+      document.getElementById('add-email').value = '';
+      document.getElementById('add-notes').value = '';
+      addFormLinkedIds = [];
+      addFormCustomFields = [];
+      closeAllInlineAccordions('add');
+      updateAddContactBtn();
+    }
+
+    function updateAddContactBtn() {
+      const name = document.getElementById('add-name').value.trim();
+      const email = document.getElementById('add-email').value.trim();
+      document.getElementById('btn-add-contact-submit').disabled = !(name && email);
+    }
+
+    function renderFieldPicker(containerId) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = Object.entries(FIELD_PRESETS).map(([cat, chips]) =>
+        `<div class="flex flex-col gap-[4px]">
+          <span class="text-xs text-ink-600 leading-normal">${cat}</span>
+          <div class="flex flex-wrap gap-[8px]">${chips.map(c =>
+            `<button type="button" class="chip-field" onclick="showToast('已选择字段：${c}')">${c}</button>`
+          ).join('')}</div>
+        </div>`
+      ).join('') + `<button type="button" onclick="showToast('创建自定义字段')" class="flex items-center gap-1 text-sm text-[#007AFF] mt-1 leading-[22px]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>创建自定义字段
+      </button>`;
+    }
+
+    function toggleInlineAccordion(scope, which) {
+      const map = scope === 'add'
+        ? { fields: 'add-acc-fields', link: 'add-acc-link', btnFields: 'add-btn-fields', btnLink: 'add-btn-link' }
+        : { fields: 'detail-acc-fields', link: 'detail-acc-link', btnFields: 'detail-btn-fields', btnLink: 'detail-btn-link' };
+      const panel = document.getElementById(map[which]);
+      const isOpen = panel.classList.contains('open');
+      closeAllInlineAccordions(scope);
+      if (!isOpen) {
+        panel.classList.add('open');
+        panel.style.maxHeight = panel.scrollHeight + 200 + 'px';
+        document.getElementById(map[which === 'fields' ? 'btnFields' : 'btnLink']).classList.add('active');
+        if (scope === 'add') {
+          addExpandedAccordion = which;
+          if (which === 'link') renderAddLinkGrid();
+        } else {
+          detailExpandedAccordion = which;
+          if (which === 'link') renderDetailLinkGrid();
+        }
+      }
+    }
+
+    function closeAllInlineAccordions(scope) {
+      const prefix = scope === 'add' ? 'add' : 'detail';
+      ['fields', 'link'].forEach(w => {
+        const panel = document.getElementById(`${prefix}-acc-${w}`);
+        if (panel) { panel.classList.remove('open'); panel.style.maxHeight = '0'; }
+        const btn = document.getElementById(`${prefix}-btn-${w}`);
+        if (btn) btn.classList.remove('active');
+      });
+      if (scope === 'add') addExpandedAccordion = null;
+      else detailExpandedAccordion = null;
+    }
+
+    function renderLinkCard(c, linkedIds, toggleFn) {
+      const linked = linkedIds.includes(c.id);
+      return `<div class="bg-white border border-surface-300 rounded-[12px] px-[16px] py-[8px] flex items-center gap-[8px] ${linked ? '' : 'opacity-60'}">
+        <div class="w-6 h-6 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shrink-0">${c.initial}</div>
+        <div class="flex-1 min-w-0"><p class="text-sm text-ink-900 leading-[22px] truncate">${c.name}</p><p class="text-xs text-ink-600 truncate leading-normal">${c.email}</p></div>
+        ${linked ? `<button type="button" onclick="${toggleFn}(${c.id})" class="w-5 h-5 rounded-full border border-surface-300 flex items-center justify-center text-ink-400 hover:text-red-6 shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` :
+          `<button type="button" onclick="${toggleFn}(${c.id})" class="text-xs text-[#007AFF] shrink-0">添加</button>`}
+      </div>`;
+    }
+
+    function renderAddLinkGrid() {
+      const q = (document.getElementById('add-link-search').value || '').toLowerCase();
+      const list = contacts.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
+      document.getElementById('add-link-grid').innerHTML = list.map(c => renderLinkCard(c, addFormLinkedIds, 'toggleAddLink')).join('') || '<p class="text-sm text-ink-400 col-span-2 text-center py-2">无匹配好友</p>';
+      const panel = document.getElementById('add-acc-link');
+      if (panel.classList.contains('open')) panel.style.maxHeight = panel.scrollHeight + 200 + 'px';
+    }
+
+    function toggleAddLink(id) {
+      if (addFormLinkedIds.includes(id)) addFormLinkedIds = addFormLinkedIds.filter(x => x !== id);
+      else addFormLinkedIds.push(id);
+      renderAddLinkGrid();
+    }
+
+    function renderDetailLinkGrid() {
+      const c = getContact(currentContactId);
+      if (!c) return;
+      if (!c.linkedContactIds) c.linkedContactIds = [];
+      const q = (document.getElementById('detail-link-search').value || '').toLowerCase();
+      const list = contacts.filter(x => x.id !== currentContactId && (x.name.toLowerCase().includes(q) || x.email.toLowerCase().includes(q)));
+      document.getElementById('detail-link-grid').innerHTML = list.map(x => renderLinkCard(x, c.linkedContactIds, 'toggleDetailLink')).join('') || '<p class="text-sm text-ink-400 col-span-2 text-center py-2">无匹配好友</p>';
+      const panel = document.getElementById('detail-acc-link');
+      if (panel.classList.contains('open')) panel.style.maxHeight = panel.scrollHeight + 200 + 'px';
+    }
+
+    function toggleDetailLink(id) {
+      const c = getContact(currentContactId);
+      if (!c) return;
+      if (!c.linkedContactIds) c.linkedContactIds = [];
+      if (c.linkedContactIds.includes(id)) c.linkedContactIds = c.linkedContactIds.filter(x => x !== id);
+      else c.linkedContactIds.push(id);
+      renderDetailLinkGrid();
+    }
+
+    function switchDetailTab(tab, groupId) {
+      const contactView = document.getElementById('detail-view-contact');
+      const groupView = document.getElementById('detail-view-group');
+      const title = document.getElementById('detail-modal-title');
+      closeAllInlineAccordions('detail');
+      if (tab === 'group') {
+        const contactGroups = getGroupsForContact(currentContactId);
+        if (!contactGroups.length) { showToast('该好友尚未加入任何分组'); return; }
+        contactView.classList.add('hidden-view');
+        groupView.classList.remove('hidden-view');
+        title.textContent = '分组信息';
+        document.getElementById('detail-tab-group').classList.add('active');
+        const target = groupId && contactGroups.some(g => g.id === groupId) ? groupId : contactGroups[0].id;
+        loadDetailGroupView(target);
+      } else {
+        groupView.classList.add('hidden-view');
+        contactView.classList.remove('hidden-view');
+        title.textContent = '好友信息';
+        document.getElementById('detail-tab-group').classList.remove('active');
+      }
+    }
+
+    function loadDetailGroupView(groupId) {
+      const g = getGroup(groupId);
+      if (!g) return;
+      detailEditingGroupId = groupId;
+      detailGroupMemberIds = [...g.memberIds];
+      detailSelectedColor = g.colorId || 'blue';
+      document.getElementById('detail-group-name').value = g.name;
+      document.getElementById('detail-group-message').value = g.message || '';
+      const contactGroups = getGroupsForContact(currentContactId);
+      document.getElementById('detail-group-tabs').innerHTML = contactGroups.map(cg =>
+        `<button type="button" onclick="loadDetailGroupView('${cg.id}')" class="text-sm px-[8px] py-[4px] rounded-[8px] leading-[22px] ${cg.id === groupId ? 'bg-brand-1 text-[#007AFF] font-semibold' : 'text-ink-600 hover:bg-surface-50'}">${cg.name}</button>`
+      ).join('');
+      renderDetailColorSwatches();
+      renderDetailGroupMemberList();
+      document.getElementById('detail-group-contact-picker').classList.add('hidden');
+    }
+
+    function renderDetailColorSwatches() {
+      document.getElementById('detail-color-swatches').innerHTML = GROUP_COLORS.map(c =>
+        `<button type="button" class="color-swatch ${c.class} ${detailSelectedColor === c.id ? 'selected' : ''}" style="background:${c.bg}" onclick="selectDetailColor('${c.id}')" aria-label="颜色 ${c.id}"></button>`
+      ).join('');
+    }
+
+    function selectDetailColor(id) { detailSelectedColor = id; renderDetailColorSwatches(); }
+
+    function renderDetailGroupMemberList() {
+      const members = detailGroupMemberIds.map(id => getContact(id)).filter(Boolean);
+      document.getElementById('detail-group-member-list').innerHTML = members.map(m =>
+        `<div class="bg-white border border-surface-300 rounded-[12px] h-[55px] px-[16px] py-[8px] flex items-center gap-[8px]">
+          <div class="w-6 h-6 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shrink-0">${m.initial}</div>
+          <div class="flex-1 min-w-0"><p class="text-sm text-ink-900 leading-[22px] truncate">${m.name}</p><p class="text-xs text-ink-600 truncate">${m.email}</p></div>
+          <button onclick="removeDetailGroupMember(${m.id})" class="w-5 h-5 text-ink-400 hover:text-red-6 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>`
+      ).join('') || `<p class="text-sm text-ink-400 col-span-2 py-4 text-center">暂无成员</p>`;
+      document.getElementById('detail-group-member-count').textContent = `${members.length}人`;
+    }
+
+    function removeDetailGroupMember(id) { detailGroupMemberIds = detailGroupMemberIds.filter(x => x !== id); renderDetailGroupMemberList(); }
+
+    function toggleDetailGroupContactPicker() {
+      const picker = document.getElementById('detail-group-contact-picker');
+      if (!picker.classList.contains('hidden')) { picker.classList.add('hidden'); return; }
+      const available = contacts.filter(c => !detailGroupMemberIds.includes(c.id));
+      picker.innerHTML = available.map(c =>
+        `<button type="button" onclick="detailGroupMemberIds.push(${c.id}); renderDetailGroupMemberList(); document.getElementById('detail-group-contact-picker').classList.add('hidden');" class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[8px] hover:bg-surface-50 text-left">
+          <div class="w-6 h-6 rounded-full bg-[#007AFF] text-white text-xs flex items-center justify-center">${c.initial}</div>
+          <span class="text-sm">${c.name}</span>
+        </button>`
+      ).join('') || '<p class="text-sm text-ink-400 p-2">无可用好友</p>';
+      picker.classList.remove('hidden');
+    }
+
+    function saveDetailGroup() {
+      const g = getGroup(detailEditingGroupId);
+      if (!g) return;
+      const name = document.getElementById('detail-group-name').value.trim();
+      if (!name) { showToast('请输入分组名称'); return; }
+      commit(() => {
+        g.name = name;
+        g.initial = getInitial(name);
+        g.message = document.getElementById('detail-group-message').value;
+        g.colorId = detailSelectedColor;
+        g.memberIds = [...detailGroupMemberIds];
+      });
+      switchDetailTab('contact');
+      const contactGroups = getGroupsForContact(currentContactId);
+      document.getElementById('detail-tags').innerHTML = contactGroups.length
+        ? contactGroups.map(detailGroupTagHtml).join('')
+        : '<span class="text-sm text-ink-400">暂无分组</span>';
+      showToast('分组信息已保存');
+    }
+
+    function deleteDetailGroup() {
+      if (!detailEditingGroupId) return;
+      commit(() => { groups = groups.filter(g => g.id !== detailEditingGroupId); });
+      const remaining = getGroupsForContact(currentContactId);
+      if (remaining.length) loadDetailGroupView(remaining[0].id);
+      else switchDetailTab('contact');
+      showToast('分组已删除');
+    }
+
+    function openContactDetail(e, id) {
+      if (e) e.stopPropagation();
+      const c = getContact(id);
+      if (!c) return;
+      currentContactId = id;
+      if (!c.linkedContactIds) c.linkedContactIds = [];
+      closeAllInlineAccordions('detail');
+      switchDetailTab('contact');
+      const contactGroups = getGroupsForContact(id);
+      document.getElementById('detail-tags').innerHTML = contactGroups.length
+        ? contactGroups.map(detailGroupTagHtml).join('')
+        : '<span class="text-sm text-ink-400">暂无分组</span>';
+      document.getElementById('detail-username').value = c.name;
+      document.getElementById('detail-email').value = c.email;
+      document.getElementById('detail-notes').value = c.notes || '';
+      document.getElementById('detail-link-search').value = '';
+      openModal('contact-detail');
+    }
+
+    function saveContactDetail() {
+      const c = getContact(currentContactId);
+      if (!c) return;
+      const name = document.getElementById('detail-username').value.trim();
+      const email = document.getElementById('detail-email').value.trim();
+      if (!name || !email) { showToast('请填写姓名和邮箱'); return; }
+      commit(() => {
+        c.name = name;
+        c.email = email;
+        c.initial = getInitial(name);
+        c.notes = document.getElementById('detail-notes').value;
+      });
+      closeModal('contact-detail');
+      showToast('好友信息已保存');
+    }
+
+    function saveNewContact() {
+      const name = document.getElementById('add-name').value.trim();
+      const email = document.getElementById('add-email').value.trim();
+      if (!name || !email) { showToast('请填写姓名和邮箱'); return; }
+      commit(() => {
+        contacts.push({
+          id: nextContactId++,
+          name, email,
+          initial: getInitial(name),
+          phone: '', linked: [],
+          linkedContactIds: [...addFormLinkedIds],
+          customFields: [...addFormCustomFields],
+          notes: document.getElementById('add-notes').value
+        });
+      });
+      closeModal('add-contact');
+      resetAddContactForm();
+      showToast('好友已添加');
+    }
+
+    function removeCurrentContact() {
+      if (!currentContactId) return;
+      commit(() => removeContactsByIds([currentContactId]));
+      closeModal('contact-detail');
+      showToast('好友已移除');
+    }
+
+    // ─── 发送副本 (6550:66356) ───────────────────────────────────
+    function openSendCopyModal(type, groupId) {
+      closeAllModals();
+      sendCopyContext = { type, groupId: groupId || null, memberEmails: [] };
+      let count = 0, emails = [], label = '';
+      if (type === 'group' && groupId) {
+        const g = getGroup(groupId);
+        const members = g ? getGroupMembers(g) : [];
+        count = members.length;
+        emails = members.map(m => m.email);
+        label = g ? g.name : '';
+      } else if (type === 'contact' && currentContactId) {
+        const c = getContact(currentContactId);
+        count = 1;
+        emails = c ? [c.email] : [];
+        label = c ? c.name : '';
+      }
+      sendCopyContext.memberEmails = emails;
+      document.getElementById('send-copy-summary').innerHTML =
+        `<p class="font-semibold leading-6">${count}位成员</p><p class="font-normal mt-1">${emails.join(', ') || label}</p>`;
+      document.getElementById('send-copy-recipient').value = '';
+      updateSendCopyBtn();
+      openModal('send-copy');
+    }
+
+    function updateSendCopyBtn() {
+      const v = document.getElementById('send-copy-recipient').value.trim();
+      document.getElementById('btn-send-copy-submit').disabled = !v;
+    }
+
+    function confirmSendCopy() {
+      closeModal('send-copy');
+      showToast('副本已发送');
+    }
+
+    // ─── Group CRUD ──────────────────────────────────────────────
+    function toggleGroupExpand(id) {
+      const g = getGroup(id);
+      if (!g) return;
+      g.expanded = !g.expanded;
+      saveToStorage();
+      renderGroups(document.getElementById('groups-search').value);
+    }
+
+    function toggleStar(id) {
+      const g = getGroup(id);
+      if (!g) return;
+      commit(() => { g.starred = !g.starred; });
+      showToast(g.starred ? '已添加到收藏' : '已取消收藏');
+    }
+
+    function renderColorSwatches() {
+      document.getElementById('color-swatches').innerHTML = GROUP_COLORS.map(c =>
+        `<button type="button" class="color-swatch ${c.class} ${selectedColor === c.id ? 'selected' : ''}" style="background:${c.bg}" onclick="selectColor('${c.id}')" aria-label="颜色 ${c.id}"></button>`
+      ).join('');
+    }
+
+    function selectColor(id) { selectedColor = id; renderColorSwatches(); }
+
+    function renderGroupMemberList() {
+      const members = groupModalMemberIds.map(id => getContact(id)).filter(Boolean);
+      document.getElementById('group-member-list').innerHTML = members.map(m =>
+        `<div class="bg-white border border-surface-300 rounded-[12px] h-[55px] px-[16px] py-[8px] flex items-center gap-[8px]">
+          <div class="w-6 h-6 rounded-full bg-brand-6 text-white text-xs font-semibold flex items-center justify-center shrink-0">${m.initial}</div>
+          <div class="flex-1 min-w-0"><p class="text-sm text-ink-900 leading-[22px] truncate">${m.name}</p><p class="text-xs text-ink-600 truncate">${m.email}</p></div>
+          <button onclick="removeGroupModalMember(${m.id})" class="w-5 h-5 text-ink-400 hover:text-red-6 shrink-0" aria-label="移除"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>`
+      ).join('') || `<p class="text-sm text-ink-400 col-span-2 py-4 text-center">暂无成员，可从下方添加</p>`;
+      document.getElementById('group-member-count').textContent = `${members.length}人`;
+    }
+
+    function removeGroupModalMember(contactId) {
+      groupModalMemberIds = groupModalMemberIds.filter(id => id !== contactId);
+      renderGroupMemberList();
+    }
+
+    function addContactToGroupModal(contactId) {
+      if (!getContact(contactId) || groupModalMemberIds.includes(contactId)) return;
+      groupModalMemberIds.push(contactId);
+      renderGroupMemberList();
+    }
+
+    function addContactToGroupModalFromInput() {
+      const q = document.getElementById('group-add-user').value.trim().toLowerCase();
+      if (!q) { showToast('请输入名称或邮箱'); return; }
+      const found = contacts.find(c =>
+        c.email.toLowerCase() === q ||
+        c.name.toLowerCase() === q ||
+        c.email.toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q)
+      );
+      if (!found) { showToast('未找到匹配的好友'); return; }
+      if (groupModalMemberIds.includes(found.id)) { showToast('该成员已在列表中'); return; }
+      addContactToGroupModal(found.id);
+      document.getElementById('group-add-user').value = '';
+      showToast(`已添加 ${found.name}`);
+    }
+
+    function toggleGroupContactPicker() {
+      const picker = document.getElementById('group-contact-picker');
+      const isHidden = picker.classList.contains('hidden');
+      if (!isHidden) { picker.classList.add('hidden'); return; }
+      const available = contacts.filter(c => !groupModalMemberIds.includes(c.id));
+      if (!available.length) { showToast('所有好友已在分组中'); return; }
+      picker.innerHTML = available.map(c =>
+        `<button type="button" onclick="addContactToGroupModal(${c.id}); renderGroupMemberList(); toggleGroupContactPicker(); showToast('已添加 ${c.name}')" class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[8px] hover:bg-surface-50 text-left">
+          <div class="w-6 h-6 rounded-full bg-brand-6 text-white text-xs flex items-center justify-center shrink-0">${c.initial}</div>
+          <span class="text-sm text-ink-900">${c.name}</span>
+          <span class="text-xs text-ink-400 truncate">${c.email}</span>
+        </button>`
+      ).join('');
+      picker.classList.remove('hidden');
+    }
+
+    function openGroupModal(mode, id) {
+      groupModalMode = mode;
+      currentGroupId = id || null;
+      document.getElementById('group-modal-title').textContent = '分组信息';
+      document.getElementById('btn-save-group').textContent = mode === 'create' ? '创建分组' : '保存';
+      document.getElementById('btn-delete-group').classList.toggle('hidden', mode === 'create');
+
+      if (mode === 'edit') {
+        const g = getGroup(id);
+        if (!g) return;
+        document.getElementById('group-name').value = g.name;
+        selectedColor = g.colorId || 'blue';
+        document.getElementById('group-message').value = g.message || '';
+        groupModalMemberIds = [...g.memberIds];
+      } else {
+        document.getElementById('group-name').value = '';
+        selectedColor = 'blue';
+        document.getElementById('group-message').value = '';
+        groupModalMemberIds = [];
+      }
+      renderColorSwatches();
+      renderGroupMemberList();
+      openModal('group');
+    }
+
+    function saveGroupModal() {
+      const name = document.getElementById('group-name').value.trim();
+      if (!name) { showToast('请输入分组名称'); return; }
+      const message = document.getElementById('group-message').value;
+
+      commit(() => {
+        if (groupModalMode === 'create') {
+          groups.unshift({
+            id: 'g' + Date.now(),
+            name,
+            initial: getInitial(name),
+            colorId: selectedColor,
+            starred: false,
+            message,
+            expanded: false,
+            memberIds: [...groupModalMemberIds]
+          });
+        } else {
+          const g = getGroup(currentGroupId);
+          if (g) {
+            g.name = name;
+            g.initial = getInitial(name);
+            g.message = message;
+            g.colorId = selectedColor;
+            g.memberIds = [...groupModalMemberIds];
+          }
+        }
+      });
+      closeModal('group');
+      showToast(groupModalMode === 'create' ? '分组已创建' : '分组信息已更新');
+    }
+
+    function deleteCurrentGroup() {
+      if (!currentGroupId) return;
+      commit(() => { groups = groups.filter(g => g.id !== currentGroupId); });
+      closeModal('group');
+      showToast('分组已删除');
+    }
+
+    // ─── Bulk group operations ───────────────────────────────────
+    function populateGroupSelect() {
+      document.getElementById('existing-group-select').innerHTML =
+        '<option value="">请选择分组…</option>' +
+        groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    }
+
+    function confirmAddToNewGroup() {
+      const name = document.getElementById('new-group-from-bulk').value.trim();
+      if (!name) { showToast('请输入分组名称'); return; }
+      if (!selectedContacts.size) { showToast('请先选择联系人'); return; }
+      commit(() => {
+        groups.unshift({
+          id: 'g' + Date.now(),
+          name,
+          initial: getInitial(name),
+          colorId: 'blue',
+          starred: false,
+          message: '',
+          expanded: false,
+          memberIds: [...selectedContacts]
+        });
+      });
+      document.getElementById('new-group-from-bulk').value = '';
+      closeModal('add-to-new-group');
+      toggleBulkEdit(false);
+      showToast('已创建分组并添加联系人');
+    }
+
+    function confirmAddToExistingGroup() {
+      const groupId = document.getElementById('existing-group-select').value;
+      if (!groupId) { showToast('请选择分组'); return; }
+      if (!selectedContacts.size) { showToast('请先选择联系人'); return; }
+      commit(() => {
+        const g = getGroup(groupId);
+        if (g) addContactsToGroup(g, [...selectedContacts]);
+      });
+      closeModal('add-to-existing-group');
+      toggleBulkEdit(false);
+      showToast('联系人已添加到分组');
+    }
+
+    // ─── Modals & misc UI ────────────────────────────────────────
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+      document.body.style.overflow = '';
+    }
+
+    function openModal(name) {
+      const m = document.getElementById('modal-' + name);
+      if (!m) return;
+      m.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (name === 'add-to-new-group') document.getElementById('bulk-count-modal').textContent = selectedContacts.size;
+      if (name === 'add-contact') {
+        resetAddContactForm();
+        renderFieldPicker('add-field-picker');
+      }
+      if (name === 'contact-detail') {
+        renderFieldPicker('detail-field-picker');
+      }
+    }
+
+    function closeModal(name) {
+      const m = document.getElementById('modal-' + name);
+      if (m) {
+        m.classList.remove('active');
+        if (!document.querySelector('.modal-overlay.active')) document.body.style.overflow = '';
+      }
+      if (name === 'add-contact') closeAllInlineAccordions('add');
+      if (name === 'contact-detail') closeAllInlineAccordions('detail');
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(o =>
+      o.addEventListener('click', e => {
+        if (e.target === o) closeAllModals();
+      })
+    );
+
+    function handleFileSelect(input) {
+      if (input.files.length) {
+        document.getElementById('file-name').textContent = '已选择: ' + input.files[0].name;
+        document.getElementById('file-name').classList.remove('hidden');
+      }
+    }
+
+    function simulateImport() { closeModal('import-csv'); showToast('CSV 导入成功'); document.getElementById('file-name').classList.add('hidden'); document.getElementById('csv-file-input').value = ''; }
+    function exportCSV() { showToast('CSV 导出已开始下载'); }
+
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('dragover'); }));
+    dropZone.addEventListener('drop', e => {
+      if (e.dataTransfer.files.length) {
+        document.getElementById('file-name').textContent = '已选择: ' + e.dataTransfer.files[0].name;
+        document.getElementById('file-name').classList.remove('hidden');
+      }
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      t.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(t._t);
+      t._t = setTimeout(() => {
+        t.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+        t.classList.remove('opacity-100', 'translate-y-0');
+      }, 2800);
+    }
+
+    // ─── Boot ────────────────────────────────────────────────────
+    document.getElementById('contacts-search').addEventListener('input', e => renderContacts(e.target.value));
+    document.getElementById('groups-search').addEventListener('input', e => renderGroups(e.target.value));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeAllModals();
+        if (bulkEditMode) toggleBulkEdit(false);
+      }
+    });
+
+    initData();
+    renderFieldPicker('add-field-picker');
+    renderFieldPicker('detail-field-picker');
+    refreshAll();
+    renderColorSwatches();
+
+    document.getElementById('group-add-user').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); addContactToGroupModalFromInput(); }
+    });
+  </script>
+</body>
+</html>
