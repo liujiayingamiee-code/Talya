@@ -1,6 +1,84 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <!--
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║  TALYA 好友管理 — 全局 Design Tokens（Figma 1:1 量化规范字典）                  ║
+  ║  来源：Talya-App Figma · 设备帧 1194×834px · 字体 PingFang SC                  ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+
+  【品牌色 Brand Colors】
+  · Primary Blue (主操作/链接)     : #007AFF   ← 弹窗「添加」「保存」「发送」激活态
+  · Primary Blue Hover             : #0066DD
+  · Primary Blue Focus Ring        : rgba(0,122,255,0.12)  2px 外发光
+  · Brand Scale (Ant Design 系)    : #E6F7FF / #BAE7FF / #69C0FF / #40A9FF / #1890FF
+  · Danger Red (移除/删除文字)      : #F5222D
+  · Tag Green Dot                  : #11D989   · Tag Purple : #722ED1 · Tag Orange : #FA8C16
+
+  【中性色 Neutral / Ink】
+  · Text Primary (标题/正文)        : #1A1919   (ink-900)
+  · Text Secondary (标签/说明)      : #666563   (ink-600)
+  · Text Tertiary (占位/辅助)       : #999894   (ink-400)
+  · Text Disabled (禁用按钮文字)    : #999894
+  · Border Default (输入框)         : #E6E6E6   ← Figma 弹窗输入框标准边框
+  · Border Secondary (按钮/卡片)    : #D9D9D9   (surface-300)
+  · Background Page (设备外)        : #EEF1F5
+  · Background Surface (行/侧栏)    : #FAFAFA   (surface-50)
+  · Background Input Disabled Btn   : #F5F5F5
+  · Background Search Bar           : #F0F0F0   (surface-200)
+  · Background Accordion Inner Box  : #FAFAFA   (surface-50) + border #E6E6E6
+
+  【字号与字重 Typography Scale】
+  · H1 Page Title      : 20px / Semibold(600) / line-height 28px  — 主内容区「好友管理」
+  · H2 Modal Title     : 18px / Semibold(600) / line-height 26px  — 弹窗标题「添加好友」等
+  · Body Large         : 16px / Regular(400)   / line-height 24px  — 弹窗说明文案、好友姓名
+  · Body Default       : 14px / Medium(500)    / line-height 22px  — 按钮、标签、Tab
+  · Body Small         : 12px / Regular(400)   / line-height 18px — 邮箱副文本
+  · Caption / Helper   : 12px / Regular(400)   / line-height normal — 「私密内容」提示
+
+  【间距步长 Spacing Scale (8pt 基准)】
+  · 4px  — 图标与文字间距、Badge 内边距、分组圆点与文字 gap
+  · 8px  — 表单 label 与 input 间距、Tag 间距、手风琴内部 gap、Nav 项 icon gap
+  · 12px — 好友行内元素 gap、分组卡片 grid gap、Toolbar 按钮组 gap
+  · 16px — 表单字段组间距、弹窗内二级区块 gap、行内 px
+  · 24px — 弹窗内容区 padding-x、主内容区 padding-x、Modal 区块垂直 gap、Sidebar section gap
+  · 32px — 设备帧 Sidebar/Main 顶部 padding
+
+  【圆角 Border Radius】
+  · 4px   — Tab 数字 Badge
+  · 8px   — 分组 Tag pill、Nav 项 hover 区域
+  · 10px  — 好友行/分组卡片容器、搜索框、Nav 搜索
+  · 12px  — 输入框 field-figma、手风琴内层容器、成员小卡片
+  · 16px  — 弹窗 modal-card 外框 (Figma 6550 系列)
+  · 17px  — 字段 Chip pill (chip-field)
+  · 20px  — 主/次按钮 pill (btn-primary-full, 移除好友/保存)
+  · 9999px— 全圆角头像 (40×40 → rounded-[20px])
+
+  【阴影 Box Shadow】
+  · Device Frame   : 0 8px 32px rgba(0,0,0,0.08)
+  · Modal Card     : 0 4px 10px rgba(0,0,0,0.08)   ← Figma 6550 弹窗
+  · Modal Legacy   : 0 16px 48px rgba(0,0,0,0.15)  — CSV/分组旧弹窗
+  · Modal Overlay  : bg-black/30 + backdrop-blur-sm
+  · Input Focus    : 0 0 0 2px rgba(0,122,255,0.12)
+  · Color Swatch Selected : 0 0 0 2px #fff, 0 0 0 4px #1890FF
+
+  【动画 Motion】
+  · Modal Overlay  : opacity 250ms
+  · Modal Panel    : scale(0.96→1) + translateY(8→0) 280ms cubic-bezier(0.22,1,0.36,1)
+  · Inline Accordion: max-height + opacity 300ms ease  (.inline-accordion-panel)
+  · Detail Tab View : opacity 250ms ease
+  · Group Expand   : max-height 450ms ease
+
+  【Z-Index 层级】
+  · Modal Overlay  : z-50  · Send Copy Modal : z-55 (叠于其他弹窗之上)  · Toast : z-70
+
+  【核心 CSS 类名 → 量化映射（见 <style> 块）】
+  · .field-figma          : h-48px · px-16px · border-1px #E6E6E6 · radius-12px · text-16px
+  · .field-textarea-figma : min-h-48px · py-12px px-16px · 同上边框/圆角
+  · .btn-pill-sm          : h-30px · py-5px px-13px · radius-20px · border #D9D9D9 · text-14px
+  · .btn-primary-full     : w-100% · h-38px · radius-20px · disabled:#F5F5F5 / active:#007AFF
+  · .inline-accordion-panel: max-height:0 → open 时 scrollHeight+200px · opacity 0→1 · 300ms
+  -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Talya — 好友管理</title>
@@ -25,6 +103,7 @@
     }
   </script>
   <style>
+    /* ── 组件样式类：与顶部 Design Tokens 字典一一对应，开发请优先复用以下 class ── */
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body { background: #eef1f5; font-family: "PingFang SC", "PingFangSC", sans-serif; -webkit-font-smoothing: antialiased; }
@@ -35,28 +114,34 @@
     }
     .scrollbar-thin::-webkit-scrollbar { width: 6px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 99px; }
-    .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s; } /* 遮罩：250ms 淡入 */
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-panel { transform: scale(0.96) translateY(8px); opacity: 0; transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.25s; }
+    .modal-panel { transform: scale(0.96) translateY(8px); opacity: 0; transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.25s; } /* 面板：scale 0.96→1, Y偏移 8→0px */
     .modal-overlay.active .modal-panel { transform: scale(1) translateY(0); opacity: 1; }
-    .modal-card { border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    .modal-card { border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); } /* Figma 6550 弹窗标准 */
+    /* field-figma：单行输入 — 高48px · 左右16px · 边框#E6E6E6 · 圆角12px · 字号16px/行高24px */
     .field-figma { width: 100%; height: 48px; padding: 0 16px; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 16px; line-height: 24px; color: #1A1919; outline: none; transition: border-color 0.15s, box-shadow 0.15s; background: #fff; }
     .field-figma::placeholder { color: #999894; }
-    .field-figma:focus { border-color: #007AFF; box-shadow: 0 0 0 2px rgba(0,122,255,0.12); }
+    .field-figma:focus { border-color: #007AFF; box-shadow: 0 0 0 2px rgba(0,122,255,0.12); } /* Focus：品牌蓝边框 + 2px 外发光 */
+    /* field-textarea-figma：多行备注 — min-h-48px · py-12px px-16px · 其余同 field-figma */
     .field-textarea-figma { width: 100%; min-height: 48px; padding: 12px 16px; border: 1px solid #E6E6E6; border-radius: 12px; font-size: 16px; line-height: 24px; color: #1A1919; outline: none; resize: vertical; transition: border-color 0.15s, box-shadow 0.15s; background: #fff; }
     .field-textarea-figma::placeholder { color: rgba(0,0,0,0.4); }
     .field-textarea-figma:focus { border-color: #007AFF; box-shadow: 0 0 0 2px rgba(0,122,255,0.12); }
+    /* btn-pill-sm：次要操作 pill — h-30px · px-13px py-5px · radius-20px · border #D9D9D9 · 展开时 .active → border #007AFF bg #E6F7FF */
     .btn-pill-sm { height: 30px; padding: 5px 13px; border-radius: 20px; border: 1px solid #D9D9D9; background: #fff; font-size: 14px; line-height: 22px; color: #1A1919; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s; }
     .btn-pill-sm:hover { background: #FAFAFA; }
     .btn-pill-sm.active { border-color: #007AFF; color: #007AFF; background: #E6F7FF; }
+    /* btn-primary-full：弹窗底部全宽主按钮 — h-38px · radius-20px · disabled:#F5F5F5/#999894 · enabled:#007AFF */
     .btn-primary-full { width: 100%; height: 38px; border-radius: 20px; font-size: 14px; font-weight: 500; line-height: 22px; transition: all 0.2s; }
     .btn-primary-full:disabled { background: #F5F5F5; border: 1px solid #D9D9D9; color: #999894; cursor: not-allowed; }
     .btn-primary-full:not(:disabled) { background: #007AFF; border: 1px solid #007AFF; color: #fff; }
     .btn-primary-full:not(:disabled):hover { background: #0066DD; }
+    /* inline-accordion-panel：内嵌手风琴 — 默认 max-height:0 opacity:0 · .open 时 JS 设 max-height=scrollHeight+200px · 过渡 300ms */
     .inline-accordion-panel { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s ease, opacity 0.3s ease; }
     .inline-accordion-panel.open { opacity: 1; }
-    .detail-view { transition: opacity 0.25s ease; }
+    .detail-view { transition: opacity 0.25s ease; } /* 好友信息 ↔ 分组信息 Tab 视图切换 */
     .detail-view.hidden-view { display: none; }
+    /* chip-field：添加字段 picker 内 chip — bg #F0F0F0 · px-8px py-2px · radius-17px · hover → #E6F7FF + #007AFF */
     .chip-field { background: #F0F0F0; padding: 2px 8px; border-radius: 17px; font-size: 14px; line-height: 22px; color: #1A1919; cursor: pointer; transition: background 0.15s; }
     .chip-field:hover { background: #E6F7FF; color: #007AFF; }
     .detail-tab-link { cursor: pointer; transition: color 0.15s; }
@@ -88,9 +173,26 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-6 device-shell">
 
+  <!--
+  ══════════════════════════════════════════════════════════════════
+  【设备帧 Device Frame】1194×834px · bg #FFFFFF · radius 12px · shadow 0 8px 32px rgba(0,0,0,0.08)
+  布局：Sidebar 252px 固定宽 + Main flex-1；超出 1194px 宽时全屏自适应
+  ══════════════════════════════════════════════════════════════════
+  -->
   <div class="device-frame bg-white rounded-xl shadow-device overflow-hidden flex relative">
 
-    <!-- Sidebar 252px — navigation component -->
+    <!--
+    ══════════════════════════════════════════════════════════════════
+    【Sidebar 侧边栏】Figma 宽 252px
+    · 背景 #FAFAFA (surface-50) · 右边框 rgba(0,0,0,0.06)
+    · 顶部 padding-top 32px · 区块垂直 gap 24px
+    · Logo 区高 55px · 左右 padding 16px
+    · 搜索框 h-40px · bg #F0F0F0 · radius 10px · px-16px py-8px
+    · Nav 项：px-8px py-4px · gap-8px · radius-10px · 字号 16px/600
+    · 当前页「好友管理」：bg #E6F7FF · 文字 #1890FF (.nav-item.active)
+    · 底部用户区：border-top #D9D9D9 · pt-20px pb-32px · gap-24px
+    ══════════════════════════════════════════════════════════════════
+    -->
     <aside class="w-[252px] bg-surface-50 border-r border-black/[0.06] flex flex-col shrink-0 pt-[32px] gap-[24px]">
       <div class="h-[55px] px-[16px] flex items-start">
         <div class="flex items-center gap-[12px] py-[4px]">
@@ -163,7 +265,13 @@
       </div>
     </aside>
 
-    <!-- Main content -->
+    <!--
+    ══════════════════════════════════════════════════════════════════
+    【Main 主内容区】py-32px · gap-24px · px-24px（内层）
+    · 页面标题 H1：20px/600 · line-height 28px · color #1A1919
+    · Sub Tab 间距 gap-16px · 激活 Tab 文字 #1890FF + Badge 实心蓝底
+    ══════════════════════════════════════════════════════════════════
+    -->
     <main class="flex-1 flex flex-col min-w-0 py-[32px] gap-[24px] overflow-hidden">
       <h1 class="text-[20px] font-semibold text-ink-900 px-[24px] leading-[28px] shrink-0">好友管理</h1>
 
@@ -178,7 +286,17 @@
           </button>
         </div>
 
-        <!-- VIEW: 好友管理-好友列表 (6550:65163) -->
+        <!--
+        ══════════════════════════════════════════════════════════════════
+        【VIEW 好友列表】Figma node 6550:65163
+        · 工具栏按钮 h-38px · px-17px · radius-full · gap-12px
+        · 「添加好友」主按钮 bg #1890FF (brand-6) · 白字
+        · 搜索框 h-40px · bg #F0F0F0 · radius-10px · px-16px
+        · 批量编辑工具栏 gap-16px · 链接文字 14px/22px
+        · 列表容器 gap-8px · 纵向滚动 scrollbar-thin(宽6px)
+        · 好友行 .contact-row — 见 JS renderContacts() 内联注释
+        ══════════════════════════════════════════════════════════════════
+        -->
         <section id="view-contacts" class="flex-1 flex flex-col min-h-0 overflow-hidden w-full gap-[12px]">
           <div class="flex items-center justify-between shrink-0 w-full">
             <span id="contacts-count" class="text-sm text-ink-600 leading-[22px]">共 18 位好友</span>
@@ -227,7 +345,15 @@
           <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-[8px] w-full" id="contacts-list"></div>
         </section>
 
-        <!-- VIEW: 好友管理-分组管理 (6550:65334) -->
+        <!--
+        ══════════════════════════════════════════════════════════════════
+        【VIEW 分组管理】Figma node 6550:65334
+        · 说明文字 16px/600 · color #666563
+        · 分组卡片 .group-card — 见 JS renderGroups() 内联注释
+        · 展开成员区 3 列 grid · gap-16px · 成员卡片 h-55px
+        · 「发送副本」链接 #007AFF · 14px · icon 14×14px
+        ══════════════════════════════════════════════════════════════════
+        -->
         <section id="view-groups" class="flex-1 flex flex-col min-h-0 overflow-hidden hidden w-full gap-[12px]">
           <div class="flex items-start justify-between shrink-0 gap-4">
             <div>
@@ -248,7 +374,7 @@
     </main>
   </div>
 
-  <!-- Modal: 导入 CSV -->
+  <!-- Modal: 导入 CSV — 旧版弹窗样式 rounded-2xl · shadow-modal · max-w-480px -->
   <div id="modal-import-csv" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[480px] mx-4 overflow-hidden">
       <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300">
@@ -273,7 +399,21 @@
     </div>
   </div>
 
-  <!-- Modal: 添加好友 (6550:66312) -->
+  <!--
+  ══════════════════════════════════════════════════════════════════
+  【Modal 添加好友】Figma node 6550:66312
+  · 容器 max-w-514px · max-h-90vh · modal-card radius-16px · shadow 0 4px 10px rgba(0,0,0,0.08)
+  · 外层 py-20px · 内容区 px-24px pt-24px · 垂直 gap-24px
+  · 标题 18px/600 lh-26px · 关闭按钮 20×20px
+  · 说明文案 16px/400 lh-24px
+  · 表单字段组 gap-16px · label-input gap-8px · label 14px #666563
+  · 输入框 class="field-figma" · 备注 class="field-textarea-figma"
+  · 辅助说明 12px #999894
+  · 次要按钮区 gap-16px · btn-pill-sm ×2（添加字段 / 关联联系人）
+  · 手风琴区 — 见下方 #add-acc-fields / #add-acc-link 注释
+  · 主按钮 #btn-add-contact-submit · btn-primary-full · 需姓名+邮箱才激活 #007AFF
+  ══════════════════════════════════════════════════════════════════
+  -->
   <div id="modal-add-contact" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden py-[20px]">
       <div class="flex items-center justify-between px-[24px] shrink-0">
@@ -306,7 +446,13 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>关联联系人
             </button>
           </div>
-          <!-- 添加字段 Accordion (6550:66386) -->
+          <!--
+          【内嵌手风琴 · 添加字段】Figma node 6550:66386
+          · 触发：#add-btn-fields 或面板内「取消」→ toggleInlineAccordion('add','fields')
+          · 默认：max-height:0 opacity:0 · 展开：.open + JS 设 max-height · 300ms 过渡
+          · 内层容器 bg #FAFAFA · border #E6E6E6 · radius-12px · p-16px · gap-8px
+          · Chip 分类：信息/工作/教育/自定义 · 由 JS renderFieldPicker('add-field-picker') 渲染
+          -->
           <div id="add-acc-fields" class="inline-accordion-panel">
             <div class="flex flex-col gap-[8px]">
               <div class="flex items-center justify-between">
@@ -316,7 +462,13 @@
               <div id="add-field-picker" class="bg-surface-50 border border-[#E6E6E6] rounded-[12px] p-[16px] flex flex-col gap-[8px]"></div>
             </div>
           </div>
-          <!-- 关联联系人 Accordion (6550:66561) -->
+          <!--
+          【内嵌手风琴 · 关联联系人】Figma node 6550:66561
+          · 触发：#add-btn-link → toggleInlineAccordion('add','link')
+          · 搜索框 field-figma · placeholder「搜索好友列表以完成关联」
+          · 联系人 grid 2列 · gap-8px · 卡片由 JS renderAddLinkGrid() 动态渲染
+          · 已关联卡片：opacity-100 + 右上角 × 移除 · 未关联：opacity-60 + 「添加」链接 #007AFF
+          -->
           <div id="add-acc-link" class="inline-accordion-panel">
             <div class="flex flex-col gap-[8px]">
               <div class="flex items-center justify-between">
@@ -335,7 +487,17 @@
     </div>
   </div>
 
-  <!-- Modal: 好友信息 / 分组信息 Tab 联动 (6550:65539 + 6550:66210) -->
+  <!--
+  ══════════════════════════════════════════════════════════════════
+  【Modal 好友信息 / 分组信息 Tab 联动】Figma 6550:65539 + 6550:66210
+  · 同一 modal-card 容器内双视图切换，不关闭弹窗
+  · #detail-view-contact — 好友信息视图（默认显示）
+  · #detail-view-group  — 分组信息编辑视图（.hidden-view 隐藏）
+  · 切换入口：#detail-tab-group 文字 Tab · 或 #detail-tags 内分组 pill 按钮
+  · 返回：#detail-view-group 内「← 返回好友信息」→ switchDetailTab('contact')
+  · 底部操作：移除好友 h-38px radius-20px 红字 #F5222D · 保存 bg #007AFF
+  ══════════════════════════════════════════════════════════════════
+  -->
   <div id="modal-contact-detail" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden py-[20px]">
       <div class="flex items-center justify-between px-[24px] shrink-0">
@@ -345,7 +507,7 @@
         </button>
       </div>
 
-      <!-- 好友信息视图 -->
+      <!-- 【视图 A】好友信息 — id=detail-view-contact · 含分组 Tag / 表单 / 手风琴 / 底部操作 -->
       <div id="detail-view-contact" class="detail-view flex-1 overflow-y-auto scrollbar-thin px-[24px] pt-[24px] flex flex-col gap-[24px]">
         <div class="flex flex-col gap-[16px]">
           <div class="flex gap-[8px] items-center flex-wrap">
@@ -373,6 +535,7 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>关联联系人
             </button>
           </div>
+          <!-- 手风琴：添加字段 / 关联联系人 — 逻辑同添加好友弹窗，scope='detail' -->
           <div id="detail-acc-fields" class="inline-accordion-panel">
             <div class="flex flex-col gap-[8px]">
               <div class="flex items-center justify-between">
@@ -407,7 +570,7 @@
         </div>
       </div>
 
-      <!-- 分组信息编辑视图 (6550:66210) -->
+      <!-- 【视图 B】分组信息编辑 — id=detail-view-group · 默认 .hidden-view · 成员 grid 2列 gap-12px · 卡片 h-55px -->
       <div id="detail-view-group" class="detail-view hidden-view flex-1 overflow-y-auto scrollbar-thin px-[24px] pt-[24px] flex flex-col gap-[24px]">
         <div class="flex flex-col gap-[16px]">
           <button type="button" onclick="switchDetailTab('contact')" class="detail-tab-link text-sm text-[#007AFF] leading-[22px] text-left w-fit">← 返回好友信息</button>
@@ -450,7 +613,15 @@
     </div>
   </div>
 
-  <!-- Modal: 发送副本 (6550:66356) -->
+  <!--
+  ══════════════════════════════════════════════════════════════════
+  【Modal 发送副本】Figma node 6550:66356 · z-index 55（叠于其他弹窗之上）
+  · 触发：分组卡片「发送副本」→ openSendCopyModal('group', id)
+  ·       好友信息底部「发送副本」→ openSendCopyModal('contact')（先 closeAllModals）
+  · 成员摘要框 bg #FAFAFA · border #D9D9D9 · radius-12px · p-16px
+  · 「发送给」输入框 field-figma · 有内容时 #btn-send-copy-submit 激活 #007AFF
+  ══════════════════════════════════════════════════════════════════
+  -->
   <div id="modal-send-copy" class="modal-overlay fixed inset-0 z-[55] flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="modal-panel modal-card bg-white w-full max-w-[514px] mx-4 flex flex-col overflow-hidden py-[20px]">
       <div class="flex items-center justify-between px-[24px] shrink-0">
@@ -511,7 +682,7 @@
     </div>
   </div>
 
-  <!-- Modal: 分组信息 (6550:66210) — 新建 & 编辑共用 -->
+  <!-- Modal: 分组信息 (6550:66210) — 分组管理页「新建/编辑」独立弹窗 · 旧版 rounded-2xl 样式 · 与好友详情内 #detail-view-group 功能平行 -->
   <div id="modal-group" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="modal-panel bg-white rounded-2xl shadow-modal w-full max-w-[514px] mx-4 max-h-[90vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between px-[24px] pt-[20px] pb-[24px] border-b border-surface-300 shrink-0">
@@ -553,9 +724,57 @@
     </div>
   </div>
 
+  <!-- Toast 全局反馈 — 底部居中 · z-70 · bg #1A1919 · radius-full · 2800ms 自动消失 -->
   <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[70] px-5 py-2.5 bg-ink-900 text-white text-sm font-medium rounded-full shadow-modal opacity-0 pointer-events-none transition-all duration-300 translate-y-4"></div>
 
   <script>
+    /*
+    ╔══════════════════════════════════════════════════════════════════════════════╗
+    ║  TALYA 好友管理 — JavaScript 交互规范说明                                      ║
+    ║  完整 Design Tokens 见 <head> 顶部注释块                                       ║
+    ╚══════════════════════════════════════════════════════════════════════════════╝
+
+    【数据流 Data Flow】
+    contacts[] + groups[] → localStorage('talya-friends-data-v1')
+    commit(mutator) → saveToStorage() → refreshAll() → renderContacts + renderGroups
+
+    【弹窗状态机 Modal State Machine】
+    · openModal(name)  → #modal-{name} 添加 .active · body overflow:hidden
+    · closeModal(name) → 移除 .active · 若无其他 active 弹窗则恢复 scroll
+    · closeAllModals() → 移除全部 .modal-overlay.active（发送副本流转前调用）
+
+    【内嵌手风琴 Inline Accordion — 不打开新弹窗】
+    作用域 scope: 'add' | 'detail'
+    面板 which:   'fields' | 'link'
+    状态变量:     addExpandedAccordion / detailExpandedAccordion (null | 'fields' | 'link')
+    DOM 变化:
+      1. 点击 #add-btn-fields 或 #detail-btn-fields
+         → closeAllInlineAccordions(scope) 先收起全部
+         → 若目标未展开: #*-acc-{which} 加 .open · maxHeight=scrollHeight+200px
+         → 触发按钮加 .active (border #007AFF bg #E6F7FF)
+         → link 模式额外调用 renderAddLinkGrid / renderDetailLinkGrid
+      2. 再次点击或点「取消」→ 收起 · maxHeight=0 · 移除 .open/.active · 状态置 null
+      3. closeModal('add-contact'|'contact-detail') 时自动 closeAllInlineAccordions
+
+    【好友信息 ↔ 分组信息 Tab 切换 — 同一弹窗容器】
+    switchDetailTab('contact'|'group', optionalGroupId):
+      'group' → #detail-view-contact 加 .hidden-view
+              → #detail-view-group  移除 .hidden-view
+              → #detail-modal-title 文字改为「分组信息」
+              → loadDetailGroupView(groupId) 填充表单
+      'contact' → 反向切换 · 标题改回「好友信息」
+
+    【发送副本弹窗流转 Send Copy Flow】
+    入口 A: 分组卡片 openSendCopyModal('group', groupId)
+    入口 B: 好友详情 openSendCopyModal('contact')
+    步骤:
+      1. closeAllModals() — 关闭所有 z-50 弹窗（含好友详情）
+      2. 组装 sendCopyContext { type, groupId, memberEmails[] }
+      3. 渲染 #send-copy-summary（N位成员 + 邮箱列表）
+      4. openModal('send-copy') — z-55 浮于最上层
+      5. updateSendCopyBtn() — #send-copy-recipient 非空 → #btn-send-copy-submit enabled
+    */
+
     // ─── Constants ───────────────────────────────────────────────
     const STORAGE_KEY = 'talya-friends-data-v1';
 
@@ -610,7 +829,17 @@
     let currentContactId = null;
     let currentGroupId = null;
 
-    // Modal interaction state
+    /*
+     * 【Modal 交互状态变量 — 与 DOM 手风琴/Tab 一一对应】
+     * addFormLinkedIds      : number[]  添加好友弹窗内已选关联联系人 ID（提交时写入 contact.linkedContactIds）
+     * addFormCustomFields   : any[]     添加好友弹窗内已选自定义字段（提交时写入 contact.customFields）
+     * addExpandedAccordion  : null|'fields'|'link'  添加好友弹窗当前展开的手风琴面板
+     * detailExpandedAccordion: 同上，作用于好友信息弹窗
+     * detailEditingGroupId  : string    分组信息 Tab 内正在编辑的 group.id
+     * detailGroupMemberIds  : number[]  分组编辑视图的成员 ID 草稿（保存时写回 group.memberIds）
+     * detailSelectedColor   : string    分组编辑视图选中的 colorId
+     * sendCopyContext       : { type:'group'|'contact', groupId, memberEmails[] }  发送副本弹窗上下文
+     */
     let addFormLinkedIds = [];
     let addFormCustomFields = [];
     let addExpandedAccordion = null;
@@ -731,6 +960,15 @@
       document.getElementById('badge-contacts').textContent = contacts.length;
       document.getElementById('select-count').textContent = `${selectedContacts.size}/${contacts.length}`;
 
+      /*
+       * 【好友行 Contact Row 量化规格 — .contact-row】
+       * · 容器 bg #FAFAFA · radius-10px · px-16px py-12px · gap-12px · hover bg #F0F0F0/50
+       * · 选中态 bulk：inset box-shadow 2px #1890FF
+       * · 头像 40×40px · radius-20px · bg #1890FF · 白字 16px
+       * · 姓名区固定宽 200px · 姓名 16px/24px · 邮箱 14px/22px #666563
+       * · 分组 Tag：px-8px py-4px · radius-8px · 圆点 14×14px · gap-4px
+       * · 右侧信息区宽 208px（非批量模式）· ⓘ 按钮 24×24px · radius-full · border #D9D9D9
+       */
       document.getElementById('contacts-list').innerHTML = filtered.length
         ? filtered.map(c => {
             const tags = getGroupsForContact(c.id).map(g => g.name);
@@ -759,6 +997,7 @@
       const q = filter.toLowerCase();
 
       function memberCard(m) {
+        /* 成员小卡片：h-55px · px-16px py-8px · border #D9D9D9 · radius-12px · 头像 24×24px */
         return `<div class="bg-white border border-surface-300 rounded-[12px] h-[55px] px-[16px] py-[8px] flex items-center gap-[8px] overflow-hidden">
           <div class="w-6 h-6 rounded-full bg-brand-6 text-white text-xs font-semibold flex items-center justify-center shrink-0">${m.initial}</div>
           <div class="min-w-0"><p class="text-sm text-ink-900 leading-[22px] truncate">${m.name}</p><p class="text-xs text-ink-600 truncate leading-[17px]">${m.email}</p></div>
@@ -766,6 +1005,14 @@
       }
 
       function groupBlock(g) {
+        /*
+         * 【分组卡片 Group Card 量化规格 — .group-card】
+         * · 容器 bg #FAFAFA · radius-10px · px-16px py-12px
+         * · 展开态 .expanded → .group-members max-height 800px · 450ms 过渡
+         * · 头像 40×40px 圆形 · 颜色由 group.colorId 映射 GROUP_COLORS
+         * · 「发送副本」14px #007AFF · 点击 → openSendCopyModal('group', id) 关闭当前层并浮起 z-55 弹窗
+         * · 成员区 3列 grid · gap-16px · pt-12px
+         */
         const members = getGroupMembers(g);
         const colorClass = getGroupColorClass(g.colorId);
         return `<div class="group-card bg-surface-50 rounded-[10px] px-[16px] py-[12px] ${g.expanded ? 'expanded' : ''}">
@@ -873,6 +1120,7 @@
 
     // ─── Contact CRUD ────────────────────────────────────────────
     function resetAddContactForm() {
+      /* 重置添加好友表单 — openModal('add-contact') 时调用 · 清空输入 + 关联 ID + 收起手风琴 */
       document.getElementById('add-name').value = '';
       document.getElementById('add-email').value = '';
       document.getElementById('add-notes').value = '';
@@ -883,6 +1131,7 @@
     }
 
     function updateAddContactBtn() {
+      /* 添加好友主按钮：姓名+邮箱均非空 → #btn-add-contact-submit disabled=false → #007AFF */
       const name = document.getElementById('add-name').value.trim();
       const email = document.getElementById('add-email').value.trim();
       document.getElementById('btn-add-contact-submit').disabled = !(name && email);
@@ -903,6 +1152,24 @@
     }
 
     function toggleInlineAccordion(scope, which) {
+      /*
+       * 【内嵌手风琴切换 — toggleInlineAccordion(scope, which)】
+       * @param scope  'add' | 'detail' — 对应添加好友 / 好友信息弹窗
+       * @param which  'fields' | 'link' — 添加字段 picker | 关联联系人 grid
+       *
+       * 点击事件 → DOM 量化变化：
+       *   Step 1: closeAllInlineAccordions(scope)
+       *           所有 #*-acc-fields / #*-acc-link → 移除 .open · maxHeight='0' · opacity→0 (300ms)
+       *           所有 #*-btn-fields / #*-btn-link → 移除 .active
+       *   Step 2: 若目标面板先前未展开 (toggle 语义):
+       *           panel.classList.add('open')
+       *           panel.style.maxHeight = scrollHeight + 200 + 'px'  ← 200px 缓冲防内容截断
+       *           触发按钮 .active → border #007AFF · bg #E6F7FF · text #007AFF
+       *           scope='add'  → addExpandedAccordion = which
+       *           scope='detail' → detailExpandedAccordion = which
+       *           which='link' → 调用 renderAddLinkGrid / renderDetailLinkGrid 填充 2列卡片
+       *   Step 3: 若目标已展开 → Step 1 已完成收起，状态变量置 null（互斥：同时只开一个面板）
+       */
       const map = scope === 'add'
         ? { fields: 'add-acc-fields', link: 'add-acc-link', btnFields: 'add-btn-fields', btnLink: 'add-btn-link' }
         : { fields: 'detail-acc-fields', link: 'detail-acc-link', btnFields: 'detail-btn-fields', btnLink: 'detail-btn-link' };
@@ -924,6 +1191,7 @@
     }
 
     function closeAllInlineAccordions(scope) {
+      /* 收起指定 scope 的全部手风琴 — 弹窗关闭时由 closeModal() 自动调用 */
       const prefix = scope === 'add' ? 'add' : 'detail';
       ['fields', 'link'].forEach(w => {
         const panel = document.getElementById(`${prefix}-acc-${w}`);
@@ -936,6 +1204,13 @@
     }
 
     function renderLinkCard(c, linkedIds, toggleFn) {
+      /*
+       * 【关联联系人卡片 — 2列 grid 单元】
+       * · 容器 bg #FFF · border #D9D9D9 · radius-12px · px-16px py-8px · gap-8px
+       * · 已关联 linked=true  → opacity-100 · 右上角 × 按钮 20×20px
+       * · 未关联 linked=false → opacity-60  · 「添加」文字 12px #007AFF
+       * · 头像 24×24px · bg #007AFF · 白字 12px/600
+       */
       const linked = linkedIds.includes(c.id);
       return `<div class="bg-white border border-surface-300 rounded-[12px] px-[16px] py-[8px] flex items-center gap-[8px] ${linked ? '' : 'opacity-60'}">
         <div class="w-6 h-6 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shrink-0">${c.initial}</div>
@@ -980,6 +1255,19 @@
     }
 
     function switchDetailTab(tab, groupId) {
+      /*
+       * 【好友信息 ↔ 分组信息 Tab 切换 — 同一 #modal-contact-detail 容器内】
+       * 触发：#detail-tab-group 点击 · #detail-tags 分组 pill · 「← 返回好友信息」
+       *
+       * tab='group':
+       *   DOM: #detail-view-contact +.hidden-view · #detail-view-group -.hidden-view
+       *   文案: #detail-modal-title →「分组信息」· #detail-tab-group +.active (#007AFF/600)
+       *   数据: loadDetailGroupView(groupId || 第一个所属分组)
+       *   前置: closeAllInlineAccordions('detail') 收起手风琴
+       *
+       * tab='contact':
+       *   DOM: 反向 · 标题→「好友信息」· 移除 Tab .active
+       */
       const contactView = document.getElementById('detail-view-contact');
       const groupView = document.getElementById('detail-view-group');
       const title = document.getElementById('detail-modal-title');
@@ -1083,6 +1371,12 @@
     }
 
     function openContactDetail(e, id) {
+      /*
+       * 打开好友信息弹窗 — 点击好友行 ⓘ 或非批量模式行点击
+       * 初始化：currentContactId · 重置 detail 手风琴 · switchDetailTab('contact')
+       * 填表：#detail-username / #detail-email / #detail-notes
+       * 渲染：#detail-tags 分组 pill（可点击 → switchDetailTab('group', groupId)）
+       */
       if (e) e.stopPropagation();
       const c = getContact(id);
       if (!c) return;
@@ -1144,8 +1438,26 @@
       showToast('好友已移除');
     }
 
-    // ─── 发送副本 (6550:66356) ───────────────────────────────────
+    // ─── 发送副本弹窗流转 (Figma 6550:66356) ─────────────────────
     function openSendCopyModal(type, groupId) {
+      /*
+       * 【发送副本 — 独立弹窗流转状态机】
+       * @param type     'group' — 从分组卡片触发 | 'contact' — 从好友详情底部触发
+       * @param groupId  分组 ID（type='group' 时必填）
+       *
+       * 流转步骤（量化）：
+       *   1. closeAllModals()
+       *      → 所有 .modal-overlay.active 移除 .active（opacity 250ms → 0）
+       *      → body.style.overflow 恢复 ''
+       *   2. 组装 sendCopyContext.memberEmails[]
+       *      group: 取 group.memberIds 对应联系人邮箱 · count = 成员数
+       *      contact: 取 currentContactId 对应邮箱 · count = 1
+       *   3. #send-copy-summary innerHTML =「{N}位成员」+ 邮箱逗号分隔列表
+       *   4. #send-copy-recipient 清空 · updateSendCopyBtn() → disabled 直至有输入
+       *   5. openModal('send-copy')
+       *      → #modal-send-copy (z-55) +.active
+       *      → .modal-panel scale 0.96→1 · translateY 8→0 · 280ms
+       */
       closeAllModals();
       sendCopyContext = { type, groupId: groupId || null, memberEmails: [] };
       let count = 0, emails = [], label = '';
@@ -1170,6 +1482,7 @@
     }
 
     function updateSendCopyBtn() {
+      /* 发送副本主按钮：#send-copy-recipient 有非空 trim 值 → #btn-send-copy-submit disabled=false → bg #007AFF */
       const v = document.getElementById('send-copy-recipient').value.trim();
       document.getElementById('btn-send-copy-submit').disabled = !v;
     }
@@ -1366,11 +1679,19 @@
 
     // ─── Modals & misc UI ────────────────────────────────────────
     function closeAllModals() {
+      /* 关闭全部弹窗 — 发送副本流转第一步 · Esc 键 · 点击遮罩层 */
       document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
       document.body.style.overflow = '';
     }
 
     function openModal(name) {
+      /*
+       * 打开弹窗 — #modal-{name} +.active
+       * 特殊初始化：
+       *   'add-contact'     → resetAddContactForm() + renderFieldPicker('add-field-picker')
+       *   'contact-detail'  → renderFieldPicker('detail-field-picker')
+       *   'add-to-new-group'→ 更新 #bulk-count-modal 选中人数
+       */
       const m = document.getElementById('modal-' + name);
       if (!m) return;
       m.classList.add('active');
@@ -1386,6 +1707,10 @@
     }
 
     function closeModal(name) {
+      /*
+       * 关闭指定弹窗 — 若无其他 active 弹窗则恢复 body scroll
+       * 'add-contact' / 'contact-detail' 关闭时 → closeAllInlineAccordions 重置手风琴 DOM
+       */
       const m = document.getElementById('modal-' + name);
       if (m) {
         m.classList.remove('active');
